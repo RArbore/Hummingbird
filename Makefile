@@ -1,7 +1,7 @@
 CXX=g++
 LD=g++
 
-CXX_FLAGS=-std=c++20
+CXX_FLAGS=-std=c++20 -fopenmp
 
 L_FLAGS=-lGL -lglfw -ljsoncpp
 
