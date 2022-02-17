@@ -29,7 +29,9 @@ int main(int argc, char **argv) {
     glClear(GL_COLOR_BUFFER_BIT);
     glfwSwapBuffers(window);
 
-    while (true);
+    while (!glfwWindowShouldClose(window)) {
+        glfwWaitEvents(); 
+    }
 
     glfwDestroyWindow(window);
     glfwTerminate();
