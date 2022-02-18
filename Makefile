@@ -1,15 +1,17 @@
 CXX=g++
 LD=LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu g++
 
-CXX_FLAGS=-std=c++20 -fopenmp
+CXX_FLAGS=-std=c++20 -fopenmp -Iinclude
 
 L_FLAGS=-L/usr/lib/x86_64-linux-gnu -lGL -lglfw -ljsoncpp
 
-hummingbird: build/main.o
+hummingbird: build/main.o build/interface.o
 	$(LD) $(L_FLAGS) -o $@ $^
 build/main.o: src/main.cc
 	$(CXX) $(CXX_FLAGS) -c -o $@ $^
-test:
+build/interface.o: src/interface.cc
+	$(CXX) $(CXX_FLAGS) -c -o $@ $^
+test: hummingbird
 	./hummingbird
 clean:
 	rm build/*.o
