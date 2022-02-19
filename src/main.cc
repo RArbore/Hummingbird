@@ -1,12 +1,16 @@
 #include <iostream>
 
 #include <interface.h>
-
-static int width, height;
+#include <cli.h>
 
 int main(int argc, char **argv) {
+  if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " <json_file>" << std::endl;
+    return -1;
+  }
 
-  // TODO Parse command line args
+  Config config(argv[1]);
+  
   Graphics graphics;
   if (graphics.initialize()) return -1;
 
