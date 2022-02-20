@@ -1,4 +1,4 @@
-#include "../../include/body.hpp"
+#include "body.hpp"
 
 int Body::getXPos() const { return xPos_; }
 int Body::getYPos() const { return yPos_; }

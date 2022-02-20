@@ -1,5 +1,9 @@
+# dynamic libraries
 *.so
 
+# executable
 hummingbird
 
+# editor files
 .vscode/*
+.dir-locals.el
