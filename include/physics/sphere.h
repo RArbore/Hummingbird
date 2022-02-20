@@ -1,4 +1,4 @@
-#include "body.hpp"
+#include "body.h"
 
 /**
  * Basic sphere object to be displayed

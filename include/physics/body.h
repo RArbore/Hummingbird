@@ -18,4 +18,6 @@ private:
   int xPos_, yPos_, zPos_;
 
   double mass_;
+
+  double gravity_;
 };

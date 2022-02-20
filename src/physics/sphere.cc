@@ -1,4 +1,4 @@
-#include "sphere.hpp"
+#include "sphere.h"
 
 int Sphere::getRadius() const { return radius_; }
 
