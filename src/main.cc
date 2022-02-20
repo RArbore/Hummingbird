@@ -1,39 +1,23 @@
 #include <iostream>
 
-#include <GL/gl.h>
-#include <GLFW/glfw3.h>
-
-static int width, height;
+#include <interface.h>
+#include <cli.h>
 
 int main(int argc, char **argv) {
-
-  // TODO Parse command line args
-
-  if (!glfwInit()) {
-    std::cerr << "ERROR: Couldn't initialize GLFW. Aborting." << std::endl;
+  if (argc != 2) {
+    std::cerr << "Usage: " << argv[0] << " <json_file>" << std::endl;
     return -1;
   }
 
-  glfwWindowHint(GLFW_RESIZABLE, GLFW_TRUE);
-  GLFWwindow *window = glfwCreateWindow(800, 600, "Hummingbird", NULL, NULL);
-  if (!window) {
-    std::cerr << "ERROR: Couldn't create window. Aborting." << std::endl;
-    glfwTerminate();
-    return -1;
+  Config config(argv[1]);
+  if (config.initialize()) return -1;
+  
+  Graphics graphics;
+  if (graphics.initialize()) return -1;
+
+  while (!graphics.should_close()) {
+    graphics.render_tick();
   }
 
-  glfwShowWindow(window);
-  glfwMakeContextCurrent(window);
-  glfwGetFramebufferSize(window, &width, &height);
-  glViewport(0, 0, width, height);
-  glClear(GL_COLOR_BUFFER_BIT);
-  glfwSwapBuffers(window);
-
-  while (!glfwWindowShouldClose(window)) {
-    glfwWaitEvents();
-  }
-
-  glfwDestroyWindow(window);
-  glfwTerminate();
   return 0;
 }
