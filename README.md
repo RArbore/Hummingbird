@@ -15,8 +15,12 @@ sudo ln -s /usr/include/jsoncpp/json/ /usr/include/json
 ```
 
 # Setup
-To run this project, simply compile and run the executable. We have provided an example starting json.
+To run this project, first compile. 
 ```
 make
-./hummingbird example.json
 ```
+This creates a ./hummingbird executable. Use this executable by doing
+```
+./hummingbird <json_file>
+```
+We have provided an example.json file for an intial configuration. 
