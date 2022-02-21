@@ -1,34 +1,36 @@
 #pragma once
 
-#include "body.h"
-#include "cli.h"
-
+#include <cstddef>
 #include <vector>
 
-/**
- * @brief Outer shell of the physics engine
- * Holds the objects and acts as the way
- */
+#include "cli.h"
 
-extern float gravity;
-extern float timeScale;
+/**
+ * @brief Context for physics calculations
+ * Keeps track of physics objects positions / dynamics, checks for and responds to collisions
+ */
 
 class Engine {
 public:
-  Engine();
+  Engine(const Config& cfg);
 
-  /**
-   * @brief Initializes the starting environment from the given data
-   *
-   * @param cfg parsed data from json file
-   */
-  void init(Config cfg);
-
-  void addBody(Body &body);
-  std::vector<Body> &getBodies();
-
-  void update();
-
+  void update(float dt);
 private:
-  std::vector<Body> bodies_;
+  // Constants / configuration
+  float grav_constant;
+  std::size_t num_bodies;
+
+  // Dynamics data
+  std::vector<float> x;
+  std::vector<float> y;
+  std::vector<float> z;
+
+  std::vector<float> vx;
+  std::vector<float> vy;
+  std::vector<float> vz;
+
+  std::vector<float> ax;
+  std::vector<float> ay;
+  std::vector<float> az;
+  
 };

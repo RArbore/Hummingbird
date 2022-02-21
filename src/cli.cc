@@ -29,5 +29,9 @@ int Config::initialize() {
                     [](const Json::Value &jv) { return jv.isNumeric(); }))
     return -1;
 
+  if (init_constant(root, "NUM_BODIES", num_bodies,
+                    [](const Json::Value &jv) { return jv.isIntegral(); }))
+    return -1;
+
   return 0;
 }
