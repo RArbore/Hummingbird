@@ -3,6 +3,7 @@
  * The abstract class from which all bodies in simulation derive from
  *
  */
+#include "engine.h"
 
 class Body {
 public:
@@ -12,12 +13,24 @@ public:
 
   double getMass() const;
 
-  virtual bool update() = 0;
+  void update();
 
-private:
-  int xPos_, yPos_, zPos_;
+protected:
+  struct Vector3d {
+    float x, y, z;
+  };
+
+  float xPos_, yPos_, zPos_;
 
   double mass_;
 
   double gravity_;
+
+  Vector3d velocity_;
+
+  Vector3d force_;
+
+private:
+  virtual void calcForceVector() = 0;
+  virtual bool collided(Body &body);
 };

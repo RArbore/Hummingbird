@@ -9,8 +9,10 @@ class Sphere : public Body {
 public:
   int getRadius() const;
 
-  bool update();
-
 private:
   int radius_;
+
+  void calcForceVector();
+
+  bool collided(Body &body);
 };

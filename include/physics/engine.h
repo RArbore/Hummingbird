@@ -10,7 +10,8 @@
  * Holds the objects and acts as the way
  */
 
-extern double gravity;
+extern float gravity;
+extern float timeScale;
 
 class Engine {
 public:

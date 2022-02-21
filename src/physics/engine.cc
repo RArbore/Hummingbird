@@ -2,9 +2,13 @@
 
 Engine::Engine() {}
 
-double gravity;
+float gravity;
+float timeScale;
 
-void Engine::init(Config cfg) { gravity = cfg.grav_constant; }
+void Engine::init(Config cfg) {
+  gravity = cfg.grav_constant;
+  timeScale = .1;
+}
 
 void Engine::addBody(Body &body) { bodies_.push_back(body); }
 
