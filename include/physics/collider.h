@@ -26,6 +26,7 @@ class Collider {
 public:
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const = 0;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const = 0;
+  virtual ~Collider();
 };
 
 class SphereCollider : public Collider {

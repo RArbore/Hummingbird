@@ -1,10 +1,12 @@
 #include "physics/collider.h"
 
+Collider::~Collider() {}
+
 SphereCollider::SphereCollider(float radius): radius(radius) {}
 
 CollisionResponse SphereCollider::checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const {
   return other.checkCollision(*this, otherPos, myPos);
-};
+}
 
 CollisionResponse SphereCollider::checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const {
   Transform BmA = otherPos - myPos;
@@ -15,7 +17,7 @@ CollisionResponse SphereCollider::checkCollision(const SphereCollider& other, co
   result.AinB = myPos + (result.normal * radius);
   result.BinA = otherPos + (result.normal * -radius);
   return result;
-};
+}
 
 Transform operator+(const Transform& a, const Transform& b) {
   return {.x = a.x + b.x, .y = a.y + b.y, .z = a.z + b.z};

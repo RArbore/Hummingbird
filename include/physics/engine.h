@@ -33,7 +33,7 @@ private:
   Vec3x<float> vel;
   Vec3x<float> acc;
   std::vector<float> mass;
-  std::vector<Collider> colliders;
+  std::vector<std::unique_ptr<Collider>> colliders;
 
   Transform getTransformAt(const std::size_t i);
 };

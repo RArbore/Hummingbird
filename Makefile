@@ -1,7 +1,7 @@
 CXX=g++
 LD=LD_LIBRARY_PATH=/usr/lib64 g++
 
-CXX_FLAGS=-std=c++17 -fopenmp -Iinclude
+CXX_FLAGS=-std=c++17 -Wall -fopenmp -Iinclude
 
 L_FLAGS=-L/usr/lib64 -lglfw -lGL -ljsoncpp
 

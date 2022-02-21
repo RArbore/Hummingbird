@@ -33,5 +33,11 @@ int Config::initialize() {
                     [](const Json::Value &jv) { return jv.isIntegral(); }))
     return -1;
 
+  const Json::Value &bodies = root["BODIES"];
+  if (!bodies.isArray()) {
+    std::cerr << "ERROR: Either couldn't find BODIES in input JSON, or the value of BODIES is not of the correct type." << std::endl;
+    return -1;
+  }
+
   return 0;
 }
