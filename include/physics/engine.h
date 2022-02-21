@@ -1,34 +1,39 @@
 #pragma once
 
-#include "body.h"
-#include "cli.h"
-
+#include <cstddef>
 #include <vector>
 
-/**
- * @brief Outer shell of the physics engine
- * Holds the objects and acts as the way
- */
+#include "physics/collider.h"
+#include "cli.h"
 
-extern float gravity;
-extern float timeScale;
+/**
+ * @brief Context for physics calculations
+ * Keeps track of physics objects positions / dynamics, checks for and responds to collisions
+ */
 
 class Engine {
 public:
-  Engine();
+  Engine(const Config& cfg);
 
-  /**
-   * @brief Initializes the starting environment from the given data
-   *
-   * @param cfg parsed data from json file
-   */
-  void init(Config cfg);
-
-  void addBody(Body &body);
-  std::vector<Body> &getBodies();
-
-  void update();
-
+  void update(const float dt);
 private:
-  std::vector<Body> bodies_;
+  // Constants / configuration
+  float grav_constant;
+  std::size_t num_bodies;
+
+  // Dynamics data
+  template <typename T>
+  struct Vec3x {
+    std::vector<T> x;
+    std::vector<T> y;
+    std::vector<T> z;
+  };
+
+  Vec3x<float> pos;
+  Vec3x<float> vel;
+  Vec3x<float> acc;
+  std::vector<float> mass;
+  std::vector<Collider> colliders;
+
+  Transform getTransformAt(const std::size_t i);
 };

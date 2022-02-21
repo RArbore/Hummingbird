@@ -1,20 +1,22 @@
-#include "engine.h"
+#include "physics/engine.h"
 
-Engine::Engine() {}
+Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
+				   num_bodies(cfg.num_bodies) {
+  pos.x.reserve(num_bodies);
+  pos.y.reserve(num_bodies);
+  pos.z.reserve(num_bodies);
 
-float gravity;
-float timeScale;
+  vel.x.reserve(num_bodies);
+  vel.y.reserve(num_bodies);
+  vel.z.reserve(num_bodies);
 
-void Engine::init(Config cfg) {
-  gravity = cfg.grav_constant;
-  timeScale = .1;
+  acc.x.reserve(num_bodies);
+  acc.y.reserve(num_bodies);
+  acc.z.reserve(num_bodies);
+
+  mass.reserve(num_bodies);
 }
 
-void Engine::addBody(Body &body) { bodies_.push_back(body); }
+void update(float dt) {
 
-std::vector<Body> &Engine::getBodies() { return bodies_; }
-
-void Engine::update() {
-  for (Body &body : bodies_)
-    body.update();
 }
