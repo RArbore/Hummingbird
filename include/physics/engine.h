@@ -3,6 +3,7 @@
 #include <cstddef>
 #include <vector>
 
+#include "physics/collider.h"
 #include "cli.h"
 
 /**
@@ -21,16 +22,18 @@ private:
   std::size_t num_bodies;
 
   // Dynamics data
-  std::vector<float> x;
-  std::vector<float> y;
-  std::vector<float> z;
+  template <typename T>
+  struct Vec3x {
+    std::vector<T> x;
+    std::vector<T> y;
+    std::vector<T> z;
+  };
 
-  std::vector<float> vx;
-  std::vector<float> vy;
-  std::vector<float> vz;
+  Vec3x<float> pos;
+  Vec3x<float> vel;
+  Vec3x<float> acc;
+  std::vector<float> mass;
+  std::vector<Collider> colliders;
 
-  std::vector<float> ax;
-  std::vector<float> ay;
-  std::vector<float> az;
-  
+  Transform getTransformAt(std::size_t i);
 };
