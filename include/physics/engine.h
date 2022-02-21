@@ -15,7 +15,7 @@ class Engine {
 public:
   Engine(const Config& cfg);
 
-  void update(float dt);
+  void update(const float dt);
 private:
   // Constants / configuration
   float grav_constant;
@@ -35,5 +35,5 @@ private:
   std::vector<float> mass;
   std::vector<Collider> colliders;
 
-  Transform getTransformAt(std::size_t i);
+  Transform getTransformAt(const std::size_t i);
 };
