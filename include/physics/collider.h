@@ -1,11 +1,23 @@
 #pragma once
 
+#include <math.h>
+
 struct Transform {
   float x, y, z;
 };
 
-struct CollisionResponse {
+Transform operator+(const Transform& a, const Transform& b);
+Transform operator-(const Transform& a, const Transform& b);
+float operator*(const Transform& a, const Transform& b);
+Transform operator*(const Transform& a, float b);
+Transform operator/(const Transform& a, float b);
 
+struct CollisionResponse {
+  Transform AinB;
+  Transform BinA;
+  Transform normal;
+  float depth;
+  bool collides;
 };
 
 class SphereCollider;
