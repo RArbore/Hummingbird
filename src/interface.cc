@@ -51,7 +51,7 @@ int Graphics::initialize() {
 }
 
 void Graphics::render_tick() {
-  glfwWaitEvents();
+  glfwPollEvents();
 }
 
 bool Graphics::should_close() {

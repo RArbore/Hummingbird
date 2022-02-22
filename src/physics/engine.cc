@@ -45,6 +45,10 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
   }
 }
 
-void update(float dt) {
+void Engine::update(const float dt) {
 
+}
+
+Transform Engine::getTransformAt(const std::size_t i) {
+  return Transform{pos.x.at(i), pos.y.at(i), pos.z.at(i)};
 }
