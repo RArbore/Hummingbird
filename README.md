@@ -1,26 +1,21 @@
 # Hummingbird
-course-project-pb-c created by GitHub Classroom
+Hummingbird is a simple rigid body physics engine.
 
-# Libraries Required
-You will need:
-- glfw
-  - You can find instructions for installing glfw [here](https://www.glfw.org/download.html)
+## Libraries Required
+To build the engine, you will need:
+- g++ (with OpenMP support)
+- GNU Make
+- OpenGL
+- GLFW
+- JsonCpp
 
-- libjsoncpp-dev
-  - Run these commands below:
-
-```
-sudo apt-get install libjsoncpp-dev
-sudo ln -s /usr/include/jsoncpp/json/ /usr/include/json
-```
-
-# Setup
+## Setup
 To run this project, first compile. 
 ```
 make
 ```
-This creates a ./hummingbird executable. Use this executable by doing
+This creates a hummingbird executable. Use this executable by running:
 ```
 ./hummingbird <json_file>
 ```
-We have provided an example.json file for an intial configuration. 
+We have provided an example.json file for an initial configuration. 
