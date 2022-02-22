@@ -62,17 +62,23 @@ int Config::initialize() {
 		      [](const Json::Value &jv) { return jv.isString(); }))
       return -1;
     if (type == "SPHERE") {
-      float x, y, r;
+      float x, y, z, m, r;
       if (init_constant(val, "x", x,
 			[](const Json::Value &jv) { return jv.isNumeric(); }))
 	return -1;
       if (init_constant(val, "y", y,
 			[](const Json::Value &jv) { return jv.isNumeric(); }))
 	return -1;
+      if (init_constant(val, "z", z,
+			[](const Json::Value &jv) { return jv.isNumeric(); }))
+	return -1;
+      if (init_constant(val, "m", m,
+			[](const Json::Value &jv) { return jv.isNumeric(); }))
+	return -1;
       if (init_constant(val, "r", r,
 			[](const Json::Value &jv) { return jv.isNumeric(); }))
 	return -1;
-      bodies.push_back(ConfigSphere{x, y, r});
+      bodies.push_back(ConfigSphere{x, y, z, m, r});
     }
     else {
       std::cerr << "ERROR: Unrecognized type " << type << "." << std::endl;

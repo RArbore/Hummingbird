@@ -13,6 +13,7 @@
 #pragma once
 
 #include <cstddef>
+#include <variant>
 #include <vector>
 
 #include "physics/collider.h"

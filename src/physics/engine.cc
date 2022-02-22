@@ -25,6 +25,24 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 
   mass.reserve(num_bodies);
   colliders.reserve(num_bodies);
+
+  for (auto vari : cfg.bodies) {
+    std::visit([&](auto&& body) {
+      using T = std::decay_t<decltype(body)>;
+      if constexpr (std::is_same_v<T, ConfigSphere>) {
+	pos.x.push_back(body.x);
+	pos.y.push_back(body.y);
+	pos.z.push_back(body.z);
+
+	vel.x.push_back(0.0);
+	vel.y.push_back(0.0);
+	vel.z.push_back(0.0);
+
+	mass.push_back(body.m);
+	colliders.push_back(std::make_unique<SphereCollider>(body.r));
+      }
+    }, vari);
+  }
 }
 
 void update(float dt) {
