@@ -30,7 +30,7 @@ int Config::initialize() {
   std::ifstream json_file(json_file_name);
   if (!json_file.is_open()) {
     std::cerr << "ERROR: Couldn't open config file " << json_file_name
-              << std::endl;
+              << "." << std::endl;
     return -1;
   }
 
@@ -45,10 +45,39 @@ int Config::initialize() {
                     [](const Json::Value &jv) { return jv.isIntegral(); }))
     return -1;
 
-  const Json::Value &bodies = root["BODIES"];
-  if (!bodies.isArray()) {
+  const Json::Value &jv_bodies = root["BODIES"];
+  if (!jv_bodies.isArray()) {
     std::cerr << "ERROR: Either couldn't find BODIES in input JSON, or the value of BODIES is not of the correct type." << std::endl;
     return -1;
+  }
+
+  if (num_bodies != root["BODIES"].size()) {
+    std::cerr << "ERROR: NUM_BODIES is not the same as the amount of bodies actually present in BODIES." << std::endl;
+    return -1;
+  }
+
+  for (auto val : root["BODIES"]) {
+    std::string type;
+    if (init_constant(val, "TYPE", type,
+		      [](const Json::Value &jv) { return jv.isString(); }))
+      return -1;
+    if (type == "SPHERE") {
+      float x, y, r;
+      if (init_constant(val, "x", x,
+			[](const Json::Value &jv) { return jv.isNumeric(); }))
+	return -1;
+      if (init_constant(val, "y", y,
+			[](const Json::Value &jv) { return jv.isNumeric(); }))
+	return -1;
+      if (init_constant(val, "r", r,
+			[](const Json::Value &jv) { return jv.isNumeric(); }))
+	return -1;
+      bodies.push_back(ConfigSphere{x, y, r});
+    }
+    else {
+      std::cerr << "ERROR: Unrecognized type " << type << "." << std::endl;
+      return -1;
+    }
   }
 
   return 0;
