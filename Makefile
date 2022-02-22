@@ -32,11 +32,19 @@ build/engine.o: src/physics/engine.cc include/physics/engine.h include/physics/c
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/collider.o: src/physics/collider.cc include/physics/collider.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
-test: hummingbird
+
+test: build/cli.o build/tests.o
+	$(LD) $(L_FLAGS) -o $@ $^
+build/tests.o: tests/cli_tests.cc
+	$(CXX) $(CXX_FLAGS) -c $^ -o $@
+
+exe: hummingbird
 	./hummingbird example.json
+exe_test: test
+	./test
 clean:
 	rm build/*.o
 	rm hummingbird
 
 .DEFAULT: hummingbird
-.PHONY: clean test
+.PHONY: exe exe_test clean

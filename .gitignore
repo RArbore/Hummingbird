@@ -3,6 +3,7 @@
 
 # executable
 hummingbird
+test
 
 # editor files
 .vscode/*
