@@ -1,4 +1,14 @@
 {
     "GRAVITY" : 1.0,
-    "NUM_BODIES" : 10
+    "NUM_BODIES" : 1,
+    "BODIES" : [
+  {
+      "TYPE" : "SPHERE",
+      "x" : 0.0,
+      "y" : 0.0,
+      "z" : 0.0,
+      "m" : 1.0,
+      "r" : 10.0
+  }
+    ]
 }

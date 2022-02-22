@@ -33,9 +33,16 @@ int Config::initialize() {
               << "." << std::endl;
     return -1;
   }
-
+  
   Json::Value root;
-  json_file >> root;
+
+  try {  
+    json_file >> root;
+  } catch(const Json::RuntimeError& e) {
+    std::cerr << "ERROR: Malformed JSON config file " << json_file_name
+              << "." << std::endl; 
+    return -1; 
+  }
 
   if (init_constant(root, "GRAVITY", grav_constant,
                     [](const Json::Value &jv) { return jv.isNumeric(); }))
@@ -50,7 +57,8 @@ int Config::initialize() {
     std::cerr << "ERROR: Either couldn't find BODIES in input JSON, or the value of BODIES is not of the correct type." << std::endl;
     return -1;
   }
-
+  std::cout << "num_bodies: " << num_bodies << std::endl; 
+  std::cout << "root[\"Bodies\"].size(): " << root["BODIES"].size() << std::endl; 
   if (num_bodies != root["BODIES"].size()) {
     std::cerr << "ERROR: NUM_BODIES is not the same as the amount of bodies actually present in BODIES." << std::endl;
     return -1;

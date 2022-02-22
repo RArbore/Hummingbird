@@ -24,18 +24,19 @@ TEST_CASE("Initialize general case", "[cli]") {
 
   REQUIRE(cfg.initialize() == 0);
   REQUIRE(cfg.grav_constant == 1.0f);
-  REQUIRE(cfg.num_bodies == 10);
+  REQUIRE(cfg.bodies.size() == 1); 
+  REQUIRE(cfg.num_bodies == 1);
 }
 
-TEST_CASE("Initialize without gravity field", "[cli]") {
-  char file_name[]{"tests/cli_jsons/no_gravity.json"};
+TEST_CASE("Initialize only gravity field", "[cli]") {
+  char file_name[]{"tests/cli_jsons/gravity.json"};
   Config cfg(file_name);
 
   REQUIRE(cfg.initialize() == -1);
 }
 
-TEST_CASE("Initialize without bodies field", "[cli]") {
-  char file_name[]{"tests/cli_jsons/no_bodies.json"};
+TEST_CASE("Initialize only bodies field", "[cli]") {
+  char file_name[]{"tests/cli_jsons/numbodies.json"};
   Config cfg(file_name);
 
   REQUIRE(cfg.initialize() == -1);
@@ -46,4 +47,11 @@ TEST_CASE("Initialize without fields", "[cli]") {
   Config cfg(file_name);
 
   REQUIRE(cfg.initialize() == -1);
+}
+
+TEST_CASE("Initialize NUM_BODIES != size of BODIES", "[cli]") {
+  char file_name[]{"tests/cli_jsons/diffbodies.json"};
+  Config cfg(file_name);
+
+  REQUIRE(cfg.initialize() == -1); 
 }
