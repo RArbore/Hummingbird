@@ -38,7 +38,7 @@ class Collider {
 public:
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const = 0;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const = 0;
-  virtual ~Collider();
+  virtual ~Collider() = default;
 };
 
 class SphereCollider : public Collider {

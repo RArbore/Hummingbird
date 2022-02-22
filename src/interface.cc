@@ -20,7 +20,7 @@
 static constexpr int DEFAULT_WIDTH = 800;
 static constexpr int DEFAULT_HEIGHT = 600;
 
-Graphics::Graphics(): window(nullptr), width(DEFAULT_WIDTH), height(DEFAULT_HEIGHT) {}
+Graphics::Graphics(const Engine &engine): window(nullptr), width(DEFAULT_WIDTH), height(DEFAULT_HEIGHT), engine(engine) {}
 
 Graphics::~Graphics() {
   if (window) glfwDestroyWindow(window);
@@ -52,8 +52,10 @@ int Graphics::initialize() {
 
 void Graphics::render_tick() {
   glfwPollEvents();
+
+  std::cout << engine.get_pos().x.size() << std::endl;
 }
 
-bool Graphics::should_close() {
+bool Graphics::should_close() const {
   return !window || glfwWindowShouldClose(window);
 }

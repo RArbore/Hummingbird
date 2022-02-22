@@ -45,6 +45,12 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
   }
 }
 
+const Engine::Vec3x<float> &Engine::get_pos() const { return pos; }
+const Engine::Vec3x<float> &Engine::get_vel() const { return vel; }
+const Engine::Vec3x<float> &Engine::get_acc() const { return acc; }
+const std::vector<float> &Engine::get_mass() const { return mass; }
+const std::vector<std::unique_ptr<Collider>> &Engine::get_colliders() const { return colliders; }
+
 void Engine::update(const float dt) {
 
 }

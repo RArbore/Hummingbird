@@ -29,12 +29,7 @@ public:
   Engine(const Config& cfg);
 
   void update(const float dt);
-private:
-  // Constants / configuration
-  float grav_constant;
-  std::size_t num_bodies;
 
-  // Dynamics data
   template <typename T>
   struct Vec3x {
     std::vector<T> x;
@@ -42,6 +37,17 @@ private:
     std::vector<T> z;
   };
 
+  const Vec3x<float> &get_pos() const;
+  const Vec3x<float> &get_vel() const;
+  const Vec3x<float> &get_acc() const;
+  const std::vector<float> &get_mass() const;
+  const std::vector<std::unique_ptr<Collider>> &get_colliders() const;
+private:
+  // Constants / configuration
+  float grav_constant;
+  std::size_t num_bodies;
+
+  // Dynamics data
   Vec3x<float> pos;
   Vec3x<float> vel;
   Vec3x<float> acc;

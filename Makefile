@@ -22,9 +22,9 @@ L_FLAGS=-L/usr/lib64 -lglfw -lGL -ljsoncpp
 
 hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o
 	$(LD) $(L_FLAGS) -o $@ $^
-build/main.o: src/main.cc
+build/main.o: src/main.cc include/physics/engine.h include/interface.h include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
-build/interface.o: src/interface.cc include/interface.h
+build/interface.o: src/interface.cc include/interface.h include/physics/engine.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/cli.o: src/cli.cc include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<

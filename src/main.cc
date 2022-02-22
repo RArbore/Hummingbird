@@ -29,11 +29,11 @@ int main(int argc, char **argv) {
 
   Config config(argv[1]);
   if (config.initialize()) return -1;
-  
-  Graphics graphics;
-  if (graphics.initialize()) return -1;
 
   Engine engine(config);
+  
+  Graphics graphics(config);
+  if (graphics.initialize()) return -1;
 
   float dt = 0.;
 
