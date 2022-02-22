@@ -45,6 +45,7 @@ exe_test: test
 clean:
 	rm build/*.o
 	rm hummingbird
+	rm test
 
 .DEFAULT: hummingbird
 .PHONY: exe exe_test clean
