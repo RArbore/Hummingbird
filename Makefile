@@ -22,13 +22,14 @@ test: build/cli.o build/tests.o
 	$(LD) $(L_FLAGS) -o $@ $^
 build/tests.o: tests/cli_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
-build/catch.o: tests/catch/catchmain.cpp
-	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
-
+exe: hummingbird
+	./hummingbird example.json
+exe_test: test
+	./test
 clean:
 	rm build/*.o
 	rm hummingbird
 
 .DEFAULT: hummingbird
-.PHONY: clean test
+.PHONY: exe exe_test clean
