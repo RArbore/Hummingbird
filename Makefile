@@ -17,8 +17,15 @@ build/engine.o: src/physics/engine.cc include/physics/engine.h include/physics/c
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/collider.o: src/physics/collider.cc include/physics/collider.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
-test: hummingbird
-	./hummingbird example.json
+
+test: build/cli.o build/tests.o
+	$(LD) $(L_FLAGS) -o $@ $^
+build/tests.o: tests/cli_tests.cc
+	$(CXX) $(CXX_FLAGS) -c $^ -o $@
+build/catch.o: tests/catch/catchmain.cpp
+	$(CXX) $(CXX_FLAGS) -c $^ -o $@
+
+
 clean:
 	rm build/*.o
 	rm hummingbird
