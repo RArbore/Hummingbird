@@ -43,7 +43,7 @@ build/tests.o: tests/cli_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
 exe: hummingbird
-	./hummingbird example.json
+	__GL_SYNC_TO_VBLANK=0 ./hummingbird example.json
 exe_test: test
 	./test
 clean:

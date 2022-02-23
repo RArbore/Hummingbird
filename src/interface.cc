@@ -90,6 +90,24 @@ int Graphics::initialize() {
     std::cerr << error_log << std::endl;
   }
 
+  shader_program = glCreateProgram();
+  glAttachShader(shader_program, vertex_shader);
+  glAttachShader(shader_program, fragment_shader);
+  glLinkProgram(shader_program);
+  glGetShaderiv(shader_program, GL_LINK_STATUS, &shader_comp_success);
+  if (!shader_comp_success) {
+    char* const error_log = new char[1024];
+    glGetShaderInfoLog(shader_program, 1024, nullptr, error_log);
+    std::cerr << "ERROR: Couldn't link the complete shader program. Here's the GL error log:" << std::endl;
+    std::cerr << error_log << std::endl;
+  }
+  glUseProgram(shader_program);
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
+  glEnableVertexAttribArray(0);
+
   return 0;
 }
 

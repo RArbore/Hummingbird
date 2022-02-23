@@ -29,5 +29,6 @@ public:
 private:
   GLFWwindow *window;
   const Engine &engine;
-  unsigned int VBO, VAO, vertex_shader, fragment_shader;
+  unsigned int VBO, VAO;
+  unsigned int vertex_shader, fragment_shader, shader_program;
 };
