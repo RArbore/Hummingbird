@@ -11,8 +11,6 @@
     along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <iostream>
-#include <string.h>
-#include <cstdlib>
 
 #define GL_GLEXT_PROTOTYPES
 
@@ -66,8 +64,31 @@ int Graphics::initialize() {
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-  std::cout << &_binary_shaders_vertex_glsl_start << std::endl;
-  std::cout << &_binary_shaders_fragment_glsl_start << std::endl;
+  const char* const vertex_shader_text = &_binary_shaders_vertex_glsl_start;
+  const char* const fragment_shader_text = &_binary_shaders_fragment_glsl_start;
+  int shader_comp_success = 0;
+
+  vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertex_shader, 1, &vertex_shader_text, nullptr);
+  glCompileShader(vertex_shader);
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &shader_comp_success);
+  if (!shader_comp_success) {
+    char* const error_log = new char[1024];
+    glGetShaderInfoLog(vertex_shader, 1024, nullptr, error_log);
+    std::cerr << "ERROR: Couldn't compile the vertex shader. Here's the GL error log:" << std::endl;
+    std::cerr << error_log << std::endl;
+  }
+
+  fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragment_shader, 1, &fragment_shader_text, nullptr);
+  glCompileShader(fragment_shader);
+  glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &shader_comp_success);
+  if (!shader_comp_success) {
+    char* const error_log = new char[1024];
+    glGetShaderInfoLog(fragment_shader, 1024, nullptr, error_log);
+    std::cerr << "ERROR: Couldn't compile the fragment shader. Here's the GL error log:" << std::endl;
+    std::cerr << error_log << std::endl;
+  }
 
   return 0;
 }
