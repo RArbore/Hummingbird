@@ -12,8 +12,14 @@
 
 #pragma once
 
+#include <iostream>
+
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
+
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <physics/engine.h>
 
@@ -29,6 +35,7 @@ public:
 private:
   GLFWwindow *window;
   const Engine &engine;
-  unsigned int VBO, VAO;
+  unsigned int VAO, VBO, EBO;
   unsigned int vertex_shader, fragment_shader, shader_program;
+  glm::mat4 proj;
 };

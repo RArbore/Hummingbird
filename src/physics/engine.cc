@@ -51,7 +51,9 @@ const Engine::Vec3x<float> &Engine::get_pos() const { return pos; }
 const Engine::Vec3x<float> &Engine::get_vel() const { return vel; }
 const Engine::Vec3x<float> &Engine::get_acc() const { return acc; }
 const std::vector<float> &Engine::get_mass() const { return mass; }
+const std::vector<Quaternion> &Engine::get_ang_pos() const { return ang_pos; }
 const std::vector<std::unique_ptr<Collider>> &Engine::get_colliders() const { return colliders; }
+std::size_t Engine::get_num_bodies() const { return num_bodies; }
 
 void Engine::update(const float dt) {
 

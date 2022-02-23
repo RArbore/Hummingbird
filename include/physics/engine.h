@@ -42,7 +42,9 @@ public:
   const Vec3x<float> &get_vel() const;
   const Vec3x<float> &get_acc() const;
   const std::vector<float> &get_mass() const;
+  const std::vector<Quaternion> &get_ang_pos() const;
   const std::vector<std::unique_ptr<Collider>> &get_colliders() const;
+  std::size_t get_num_bodies() const;
 private:
   // Constants / configuration
   float grav_constant;

@@ -32,9 +32,9 @@ int main(int argc, char **argv) {
 
   Engine engine(config);
   
-  Graphics graphics(config);
+  Graphics graphics(engine);
   if (graphics.initialize()) return -1;
-
+  
   float dt = 0.;
 
   unsigned long long before = 0, after = 0;

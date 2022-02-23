@@ -10,12 +10,7 @@
     You should have received a copy of the GNU General Public License
     along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.  */
 
-#include <iostream>
-
 #define GL_GLEXT_PROTOTYPES
-
-#include <GL/gl.h>
-#include <GLFW/glfw3.h>
 
 #include <interface.h>
 
@@ -26,7 +21,45 @@ extern "C" char _binary_shaders_vertex_glsl_start;
 extern "C" char _binary_shaders_fragment_glsl_start;
 
 static int width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
-static bool resized = false;
+static bool resized = true;
+
+static constexpr float golden_ratio = 1.6180339887f;
+static constexpr float icosphere_base_pts[12][3] = {
+  {-1.0f, golden_ratio, 0.0f},
+  {1.0f, golden_ratio, 0.0f},
+  {-1.0f, -golden_ratio, 0.0f},
+  {1.0f, -golden_ratio, 0.0f},
+  {0.0f, -1.0f, golden_ratio},
+  {0.0f, 1.0f, golden_ratio},
+  {0.0f, -1.0f, -golden_ratio},
+  {0.0f, 1.0f, -golden_ratio},
+  {golden_ratio, 0.0f, -1.0f},
+  {golden_ratio, 0.0f, 1.0f},
+  {-golden_ratio, 0.0f, -1.0f},
+  {-golden_ratio, 0.0f, 1.0f},
+};
+static constexpr unsigned int icosphere_base_tris[20][3] = {
+  {0, 11, 5},
+  {0, 5, 1},
+  {0, 1, 7},
+  {0, 7, 10},
+  {0, 10, 11},
+  {1, 5, 9},
+  {5, 11, 4},
+  {11, 10, 2},
+  {10, 7, 6},
+  {7, 1, 8},
+  {3, 9, 4},
+  {3, 4, 2},
+  {3, 2, 6},
+  {3, 6, 8},
+  {3, 8, 9},
+  {4, 9, 5},
+  {2, 4, 11},
+  {6, 2, 10},
+  {8, 6, 7},
+  {9, 8, 1},
+};
 
 Graphics::Graphics(const Engine &engine): window(nullptr), engine(engine) {}
 
@@ -63,6 +96,9 @@ int Graphics::initialize() {
 
   glGenBuffers(1, &VBO);
   glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+  glGenBuffers(1, &EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
   const char* const vertex_shader_text = &_binary_shaders_vertex_glsl_start;
   const char* const fragment_shader_text = &_binary_shaders_fragment_glsl_start;
@@ -108,12 +144,31 @@ int Graphics::initialize() {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
   glEnableVertexAttribArray(0);
 
+  glBufferData(GL_ARRAY_BUFFER, 12 * 3 * sizeof(float), icosphere_base_pts, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 20 * 3 * sizeof(unsigned int), icosphere_base_tris, GL_STATIC_DRAW);
+
   return 0;
 }
 
 void Graphics::render_tick() {
   glfwPollEvents();
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  if (resized) {
+    proj = glm::perspective(glm::radians(45.0f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
+  }
+  for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
+    const auto& quat = engine.get_ang_pos().at(i);
+    glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
+    glm::mat4 model_pos = glm::translate(glm::mat4(1.0f),
+					 glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
+    glm::mat4 view = glm::translate(glm::mat4(1.0f),
+				    glm::vec3(0.0f, 0.0f, -10.0f));
+    glm::mat4 transform = proj * view * model_pos * model_rot;
+    int transform_loc = glGetUniformLocation(shader_program, "transform");
+    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform));
+    glDrawElements(GL_TRIANGLES, 20 * 3, GL_UNSIGNED_INT, 0);
+  }
 
   glfwSwapBuffers(window);
   resized = false;
