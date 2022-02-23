@@ -32,20 +32,17 @@ struct CollisionResponse {
   bool collides;
 };
 
-class SphereCollider;
+struct SphereCollider;
 
-class Collider {
-public:
+struct Collider {
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const = 0;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const = 0;
   virtual ~Collider() = default;
 };
 
-class SphereCollider : public Collider {
-public:
+struct SphereCollider : public Collider {
+  float radius;
   SphereCollider(float radius);
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const override;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const override;
-private:
-  float radius;
 };

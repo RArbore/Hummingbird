@@ -24,6 +24,7 @@ static int width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
 static bool resized = true;
 
 static constexpr float golden_ratio = 1.6180339887f;
+static constexpr float inv_golden_ratio = 1.0f / golden_ratio;
 static constexpr float icosphere_base_pts[12][3] = {
   {-1.0f, golden_ratio, 0.0f},
   {1.0f, golden_ratio, 0.0f},
@@ -141,6 +142,8 @@ int Graphics::initialize() {
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
 
+  transform_loc = glGetUniformLocation(shader_program, "transform");
+
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
   glEnableVertexAttribArray(0);
 
@@ -157,17 +160,21 @@ void Graphics::render_tick() {
   if (resized) {
     proj = glm::perspective(glm::radians(45.0f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
   }
+  glm::mat4 identity = glm::mat4(1.0f);
+  glm::mat4 view = glm::translate(identity, glm::vec3(0.0f, 0.0f, -10.0f));
+  glm::mat4 proj_view = proj * view;
   for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
-    const auto& quat = engine.get_ang_pos().at(i);
-    glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
-    glm::mat4 model_pos = glm::translate(glm::mat4(1.0f),
-					 glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
-    glm::mat4 view = glm::translate(glm::mat4(1.0f),
-				    glm::vec3(0.0f, 0.0f, -10.0f));
-    glm::mat4 transform = proj * view * model_pos * model_rot;
-    int transform_loc = glGetUniformLocation(shader_program, "transform");
-    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform));
-    glDrawElements(GL_TRIANGLES, 20 * 3, GL_UNSIGNED_INT, 0);
+    const Collider* coll = engine.get_colliders().at(i).get();
+    if (const SphereCollider* sphere_coll = dynamic_cast<const SphereCollider*>(coll)) {
+      float scale_factor = inv_golden_ratio * sphere_coll->radius;
+      glm::mat4 scale = glm::scale(identity, glm::vec3(scale_factor, scale_factor, scale_factor));
+      const auto& quat = engine.get_ang_pos().at(i);
+      glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
+      glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
+      glm::mat4 transform = proj_view * model_pos * model_rot * scale;
+      glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform));
+      glDrawElements(GL_TRIANGLES, 20 * 3, GL_UNSIGNED_INT, 0);
+    }
   }
 
   glfwSwapBuffers(window);

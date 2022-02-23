@@ -13,6 +13,7 @@
 #pragma once
 
 #include <iostream>
+#include <variant>
 
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
@@ -36,6 +37,6 @@ private:
   GLFWwindow *window;
   const Engine &engine;
   unsigned int VAO, VBO, EBO;
-  unsigned int vertex_shader, fragment_shader, shader_program;
+  unsigned int vertex_shader, fragment_shader, shader_program, transform_loc;
   glm::mat4 proj;
 };
