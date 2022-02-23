@@ -17,6 +17,8 @@
 
 #include <physics/engine.h>
 
+void resize_callback(GLFWwindow* window, int width, int height);
+
 class Graphics {
 public:
   Graphics(const Engine &engine);
@@ -27,6 +29,5 @@ public:
 
 private:
   GLFWwindow *window;
-  int width, height;
   const Engine &engine;
 };

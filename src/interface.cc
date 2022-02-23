@@ -20,7 +20,10 @@
 static constexpr int DEFAULT_WIDTH = 800;
 static constexpr int DEFAULT_HEIGHT = 600;
 
-Graphics::Graphics(const Engine &engine): window(nullptr), width(DEFAULT_WIDTH), height(DEFAULT_HEIGHT), engine(engine) {}
+static int width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
+static bool resized = false;
+
+Graphics::Graphics(const Engine &engine): window(nullptr), engine(engine) {}
 
 Graphics::~Graphics() {
   if (window) glfwDestroyWindow(window);
@@ -43,19 +46,33 @@ int Graphics::initialize() {
   glfwShowWindow(window);
   glfwMakeContextCurrent(window);
   glfwGetFramebufferSize(window, &width, &height);
+  glfwSetFramebufferSizeCallback(window, resize_callback);
   glViewport(0, 0, width, height);
+  glEnable(GL_DEPTH_TEST);
+  glDepthMask(GL_TRUE);
+  glEnable(GL_CULL_FACE);
   glClear(GL_COLOR_BUFFER_BIT);
-  glfwSwapBuffers(window);
 
   return 0;
 }
 
 void Graphics::render_tick() {
   glfwPollEvents();
+  glClear(GL_COLOR_BUFFER_BIT);
 
-  std::cout << engine.get_pos().x.size() << std::endl;
+
+
+  glfwSwapBuffers(window);
+  resized = false;
 }
 
 bool Graphics::should_close() const {
   return !window || glfwWindowShouldClose(window);
+}
+
+void resize_callback([[maybe_unused]] GLFWwindow* window, int new_width, int new_height) {
+  width = new_width;
+  height = new_height;
+  resized = true;
+  glViewport(0, 0, width, height);
 }
