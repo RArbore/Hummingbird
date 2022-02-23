@@ -20,7 +20,7 @@ CXX_FLAGS=-std=c++17 -Wall -fopenmp -Iinclude
 
 L_FLAGS=-L/usr/lib64 -lglfw -lGL -ljsoncpp
 
-hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o
+hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/vertex.o build/fragment.o
 	$(LD) $(L_FLAGS) -o $@ $^
 build/main.o: src/main.cc include/physics/engine.h include/interface.h include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
@@ -32,6 +32,10 @@ build/engine.o: src/physics/engine.cc include/physics/engine.h include/physics/c
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/collider.o: src/physics/collider.cc include/physics/collider.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
+build/vertex.o: shaders/vertex.glsl
+	objcopy --input binary --output elf64-x86-64 $< $@
+build/fragment.o: shaders/fragment.glsl
+	objcopy --input binary --output elf64-x86-64 $< $@
 
 test: build/cli.o build/tests.o
 	$(LD) $(L_FLAGS) -o $@ $^

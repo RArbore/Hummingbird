@@ -11,6 +11,10 @@
     along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <iostream>
+#include <string.h>
+#include <cstdlib>
+
+#define GL_GLEXT_PROTOTYPES
 
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
@@ -19,6 +23,9 @@
 
 static constexpr int DEFAULT_WIDTH = 800;
 static constexpr int DEFAULT_HEIGHT = 600;
+
+extern "C" char _binary_shaders_vertex_glsl_start;
+extern "C" char _binary_shaders_fragment_glsl_start;
 
 static int width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
 static bool resized = false;
@@ -51,16 +58,23 @@ int Graphics::initialize() {
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
   glEnable(GL_CULL_FACE);
-  glClear(GL_COLOR_BUFFER_BIT);
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glGenVertexArrays(1, &VAO);
+  glBindVertexArray(VAO);
+
+  glGenBuffers(1, &VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+  std::cout << &_binary_shaders_vertex_glsl_start << std::endl;
+  std::cout << &_binary_shaders_fragment_glsl_start << std::endl;
 
   return 0;
 }
 
 void Graphics::render_tick() {
   glfwPollEvents();
-  glClear(GL_COLOR_BUFFER_BIT);
-
-
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   glfwSwapBuffers(window);
   resized = false;

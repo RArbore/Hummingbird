@@ -26,8 +26,8 @@ public:
   int initialize();
   void render_tick();
   bool should_close() const;
-
 private:
   GLFWwindow *window;
   const Engine &engine;
+  unsigned int VBO, VAO;
 };
