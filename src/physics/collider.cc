@@ -12,8 +12,6 @@
 
 #include "physics/collider.h"
 
-Collider::~Collider() {}
-
 SphereCollider::SphereCollider(float radius): radius(radius) {}
 
 CollisionResponse SphereCollider::checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const {

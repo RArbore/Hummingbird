@@ -15,15 +15,20 @@
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
 
+#include <physics/engine.h>
+
+void resize_callback(GLFWwindow* window, int width, int height);
+
 class Graphics {
 public:
-  Graphics();
+  Graphics(const Engine &engine);
   ~Graphics();
   int initialize();
   void render_tick();
-  bool should_close();
-
+  bool should_close() const;
 private:
   GLFWwindow *window;
-  int width, height;
+  const Engine &engine;
+  unsigned int VBO, VAO;
+  unsigned int vertex_shader, fragment_shader, shader_program;
 };

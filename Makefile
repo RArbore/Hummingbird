@@ -20,11 +20,11 @@ CXX_FLAGS=-std=c++17 -Wall -fopenmp -Iinclude
 
 L_FLAGS=-L/usr/lib64 -lglfw -lGL -ljsoncpp
 
-hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/quaternion.o
+hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/quaternion.o build/vertex.o build/fragment.o
 	$(LD) $(L_FLAGS) -o $@ $^
-build/main.o: src/main.cc
+build/main.o: src/main.cc include/physics/engine.h include/interface.h include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
-build/interface.o: src/interface.cc include/interface.h
+build/interface.o: src/interface.cc include/interface.h include/physics/engine.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/cli.o: src/cli.cc include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
@@ -34,6 +34,10 @@ build/collider.o: src/physics/collider.cc include/physics/collider.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/quaternion.o: src/physics/quaternion.cc include/physics/quaternion.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
+build/vertex.o: shaders/vertex.glsl
+	objcopy --input binary --output elf64-x86-64 $< $@
+build/fragment.o: shaders/fragment.glsl
+	objcopy --input binary --output elf64-x86-64 $< $@
 
 test: build/cli.o build/tests.o
 	$(LD) $(L_FLAGS) -o $@ $^
@@ -41,12 +45,13 @@ build/tests.o: tests/cli_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
 exe: hummingbird
-	./hummingbird example.json
+	__GL_SYNC_TO_VBLANK=0 ./hummingbird example.json
 exe_test: test
 	./test
 clean:
-	rm build/*.o
-	rm hummingbird
+	rm -rf build/*.o
+	rm -rf hummingbird
+	rm -rf test
 
 .DEFAULT: hummingbird
 .PHONY: exe exe_test clean

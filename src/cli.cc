@@ -57,8 +57,7 @@ int Config::initialize() {
     std::cerr << "ERROR: Either couldn't find BODIES in input JSON, or the value of BODIES is not of the correct type." << std::endl;
     return -1;
   }
-  std::cout << "num_bodies: " << num_bodies << std::endl; 
-  std::cout << "root[\"Bodies\"].size(): " << root["BODIES"].size() << std::endl; 
+
   if (num_bodies != root["BODIES"].size()) {
     std::cerr << "ERROR: NUM_BODIES is not the same as the amount of bodies actually present in BODIES." << std::endl;
     return -1;
