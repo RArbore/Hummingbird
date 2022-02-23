@@ -16,6 +16,7 @@
 #include <variant>
 #include <vector>
 
+#include "physics/quaternion.h"
 #include "physics/collider.h"
 #include "cli.h"
 
@@ -46,6 +47,7 @@ private:
   Vec3x<float> vel;
   Vec3x<float> acc;
   std::vector<float> mass;
+  std::vector<Quaternion> ang_pos;
   std::vector<std::unique_ptr<Collider>> colliders;
 
   Transform getTransformAt(const std::size_t i);

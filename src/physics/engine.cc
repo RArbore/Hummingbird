@@ -14,7 +14,7 @@
 
 Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 				   num_bodies(cfg.num_bodies),
-				   acc{std::vector<float>(num_bodies, 0.0), std::vector<float>(num_bodies, 0.0), std::vector<float>(num_bodies, 0.0)} {
+				   acc{std::vector<float>(num_bodies, 0.0f), std::vector<float>(num_bodies, 0.0f), std::vector<float>(num_bodies, 0.0f)} {
   pos.x.reserve(num_bodies);
   pos.y.reserve(num_bodies);
   pos.z.reserve(num_bodies);
@@ -24,6 +24,7 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
   vel.z.reserve(num_bodies);
 
   mass.reserve(num_bodies);
+  ang_pos.reserve(num_bodies);
   colliders.reserve(num_bodies);
 
   for (auto vari : cfg.bodies) {
@@ -34,11 +35,12 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 	pos.y.push_back(body.y);
 	pos.z.push_back(body.z);
 
-	vel.x.push_back(0.0);
-	vel.y.push_back(0.0);
-	vel.z.push_back(0.0);
+	vel.x.push_back(0.0f);
+	vel.y.push_back(0.0f);
+	vel.z.push_back(0.0f);
 
 	mass.push_back(body.m);
+	ang_pos.push_back(Quaternion{0.0f, 0.0f, 0.0f, 0.0f});
 	colliders.push_back(std::make_unique<SphereCollider>(body.r));
       }
     }, vari);
