@@ -15,6 +15,7 @@
 #include <cstddef>
 #include <variant>
 #include <vector>
+#include <memory>
 
 #include "physics/quaternion.h"
 #include "physics/collider.h"

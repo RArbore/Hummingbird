@@ -14,14 +14,14 @@
     along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.
 
 CXX=g++
-LD=LD_LIBRARY_PATH=/usr/lib64 g++
+LD=g++
 
 CXX_FLAGS=-std=c++17 -Wall -fopenmp -Iinclude
 
-L_FLAGS=-L/usr/lib64 -lglfw -lGL -ljsoncpp
+L_FLAGS=-L/usr/lib/x86_64-linux-gnu -lglfw -lGL -ljsoncpp
 
 hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/quaternion.o build/vertex.o build/fragment.o
-	$(LD) $(L_FLAGS) -o $@ $^
+	$(LD) -o $@ $^ $(L_FLAGS)
 build/main.o: src/main.cc include/physics/engine.h include/interface.h include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/interface.o: src/interface.cc include/interface.h include/physics/engine.h
