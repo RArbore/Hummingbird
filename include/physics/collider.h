@@ -42,7 +42,7 @@ struct Collider {
 
 struct SphereCollider : public Collider {
   float radius;
-  SphereCollider(float radius);
+  SphereCollider(float radius_i);
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const override;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const override;
 };

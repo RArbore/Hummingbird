@@ -28,7 +28,7 @@ void resize_callback(GLFWwindow* window, int width, int height);
 
 class Graphics {
 public:
-  Graphics(const Engine &engine);
+  Graphics(const Engine &engine_i);
   ~Graphics();
   int initialize();
   void render_tick();
@@ -37,6 +37,7 @@ private:
   GLFWwindow *window;
   const Engine &engine;
   unsigned int VAO, VBO, EBO;
-  unsigned int vertex_shader, fragment_shader, shader_program, transform_loc;
+  unsigned int vertex_shader, fragment_shader, shader_program;
+  int transform_loc;
   glm::mat4 proj;
 };

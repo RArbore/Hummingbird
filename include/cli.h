@@ -25,7 +25,7 @@ struct ConfigSphere {
 };
 
 struct Config {
-  Config(char *json_file_name) : json_file_name(json_file_name) {}
+  Config(char *json_file_name_i) : json_file_name(json_file_name_i) {}
   int initialize();
   char *json_file_name;
   float grav_constant;

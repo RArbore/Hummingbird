@@ -62,7 +62,7 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
   {9, 8, 1},
 };
 
-Graphics::Graphics(const Engine &engine): window(nullptr), engine(engine) {}
+Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i) {}
 
 Graphics::~Graphics() {
   if (window) glfwDestroyWindow(window);

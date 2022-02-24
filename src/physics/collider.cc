@@ -12,7 +12,7 @@
 
 #include "physics/collider.h"
 
-SphereCollider::SphereCollider(float radius): radius(radius) {}
+SphereCollider::SphereCollider(float radius_i): radius(radius_i) {}
 
 CollisionResponse SphereCollider::checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const {
   return other.checkCollision(*this, otherPos, myPos);
@@ -30,11 +30,11 @@ CollisionResponse SphereCollider::checkCollision(const SphereCollider& other, co
 }
 
 Transform operator+(const Transform& a, const Transform& b) {
-  return {.x = a.x + b.x, .y = a.y + b.y, .z = a.z + b.z};
+  return {a.x + b.x, a.y + b.y, a.z + b.z};
 }
 
 Transform operator-(const Transform& a, const Transform& b) {
-  return {.x = a.x - b.x, .y = a.y - b.y, .z = a.z - b.z};
+  return {a.x - b.x, a.y - b.y, a.z - b.z};
 }
 
 float operator*(const Transform& a, const Transform& b) {
@@ -42,9 +42,9 @@ float operator*(const Transform& a, const Transform& b) {
 }
 
 Transform operator*(const Transform& a, float b) {
-  return {.x = a.x * b, .y = a.y * b, .z = a.z * b};
+  return {a.x * b, a.y * b, a.z * b};
 }
 
 Transform operator/(const Transform& a, float b) {
-  return {.x = a.x / b, .y = a.y / b, .z = a.z / b};
+  return {a.x / b, a.y / b, a.z / b};
 }
