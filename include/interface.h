@@ -24,6 +24,7 @@
 
 #include <physics/engine.h>
 
+void mouse_callback(GLFWwindow* window, double x, double y);
 void resize_callback(GLFWwindow* window, int width, int height);
 
 class Graphics {

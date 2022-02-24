@@ -21,7 +21,9 @@ extern "C" char _binary_shaders_vertex_glsl_start;
 extern "C" char _binary_shaders_fragment_glsl_start;
 
 static int width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
-static bool resized = true;
+static bool resized = true, mouse_moved = false, first_mouse = true;
+
+static float last_x = 0.0f, last_y = 0.0f, recent_x = 0.0f, recent_y = 0.0f;
 
 static constexpr float golden_ratio = 1.6180339887f;
 static constexpr float inv_golden_ratio = 1.0f / golden_ratio;
@@ -63,6 +65,7 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
 };
 
 static constexpr float MOVE_SPEED = 10.0f;
+static constexpr float SENSITIVITY = 0.001f;
 
 Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i),
 					    cx(0.0f), cy(0.0f), cz(0.0f), cphi(0.0f), ctheta(0.0f) {}
@@ -89,6 +92,8 @@ int Graphics::initialize() {
   glfwMakeContextCurrent(window);
   glfwGetFramebufferSize(window, &width, &height);
   glfwSetFramebufferSizeCallback(window, resize_callback);
+  glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+  glfwSetCursorPosCallback(window, mouse_callback); 
   glViewport(0, 0, width, height);
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
@@ -213,10 +218,32 @@ void Graphics::handle_input(float dt) {
   if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
     cy -= MOVE_SPEED * dt;
   }
+
+  if (mouse_moved && !first_mouse) {
+    float offset_x = (recent_x - last_x) * SENSITIVITY;
+    float offset_y = (last_y - recent_y) * SENSITIVITY;
+    ctheta += offset_x;
+    cphi += offset_y;
+    if (cphi > 1.5f) cphi = 1.5f;
+    else if (cphi < -1.5f) cphi = -1.5f;
+    mouse_moved = false;
+  }
+  else if (mouse_moved) {
+    first_mouse = false;
+    mouse_moved = false;
+  }
 }
 
 bool Graphics::should_close() const {
   return !window || glfwWindowShouldClose(window);
+}
+
+void mouse_callback([[maybe_unused]] GLFWwindow* window, double x, double y) {
+  last_x = recent_x;
+  last_y = recent_y;
+  recent_x = static_cast<float>(x);
+  recent_y = static_cast<float>(y);
+  mouse_moved = true;
 }
 
 void resize_callback([[maybe_unused]] GLFWwindow* window, int new_width, int new_height) {
