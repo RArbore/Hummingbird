@@ -31,13 +31,17 @@ public:
   Graphics(const Engine &engine_i);
   ~Graphics();
   int initialize();
-  void render_tick();
+  void render_tick(float dt);
   bool should_close() const;
 private:
   GLFWwindow *window;
   const Engine &engine;
+
   unsigned int VAO, VBO, EBO;
   unsigned int vertex_shader, fragment_shader, shader_program;
   int transform_loc;
+
   glm::mat4 proj;
+  float cx, cy, cz, cphi, ctheta;
+  void handle_input(float dt);
 };

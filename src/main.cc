@@ -43,11 +43,11 @@ int main(int argc, char **argv) {
     before = micro_sec();
     
     engine.update(dt);
-    graphics.render_tick();
+    graphics.render_tick(dt);
 
     after = micro_sec();
-    dt = static_cast<float>(after - before) / 1000000.;
-    std::cout << "FPS: " << 1. / dt << std::endl;
+    dt = static_cast<float>(after - before) / 1000000.0f;
+    //std::cout << "FPS: " << 1. / dt << std::endl;
   }
 
   return 0;

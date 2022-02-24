@@ -62,7 +62,10 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
   {9, 8, 1},
 };
 
-Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i) {}
+static constexpr float MOVE_SPEED = 10.0f;
+
+Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i),
+					    cx(0.0f), cy(0.0f), cz(0.0f), cphi(0.0f), ctheta(0.0f) {}
 
 Graphics::~Graphics() {
   if (window) glfwDestroyWindow(window);
@@ -153,15 +156,20 @@ int Graphics::initialize() {
   return 0;
 }
 
-void Graphics::render_tick() {
-  glfwPollEvents();
+void Graphics::render_tick(float dt) {
+  handle_input(dt);
+
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (resized) {
     proj = glm::perspective(glm::radians(45.0f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
   }
   glm::mat4 identity = glm::mat4(1.0f);
-  glm::mat4 view = glm::translate(identity, glm::vec3(0.0f, 0.0f, -10.0f));
+  glm::vec3 cdir = glm::vec3(cos(ctheta) * cos(cphi), sin(cphi), sin(ctheta) * cos(cphi));
+  glm::vec3 cpos = glm::vec3(cx, cy, cz);
+  glm::vec3 cfront = glm::normalize(cdir);
+  glm::vec3 cup = glm::vec3(0.0f, 1.0f, 0.0f);
+  glm::mat4 view = glm::lookAt(cpos, cpos + cfront, cup);
   glm::mat4 proj_view = proj * view;
   for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
     const Collider* coll = engine.get_colliders().at(i).get();
@@ -179,6 +187,32 @@ void Graphics::render_tick() {
 
   glfwSwapBuffers(window);
   resized = false;
+}
+
+void Graphics::handle_input(float dt) {
+  glfwPollEvents();
+  if (glfwGetKey(window, GLFW_KEY_W)) {
+    cx += MOVE_SPEED * cos(ctheta) * dt;
+    cz += MOVE_SPEED * sin(ctheta) * dt;
+  }
+  if (glfwGetKey(window, GLFW_KEY_A)) {
+    cx += MOVE_SPEED * sin(ctheta) * dt;
+    cz -= MOVE_SPEED * cos(ctheta) * dt;
+  }
+  if (glfwGetKey(window, GLFW_KEY_S)) {
+    cx -= MOVE_SPEED * cos(ctheta) * dt;
+    cz -= MOVE_SPEED * sin(ctheta) * dt;
+  }
+  if (glfwGetKey(window, GLFW_KEY_D)) {
+    cx -= MOVE_SPEED * sin(ctheta) * dt;
+    cz += MOVE_SPEED * cos(ctheta) * dt;
+  }
+  if (glfwGetKey(window, GLFW_KEY_SPACE)) {
+    cy += MOVE_SPEED * dt;
+  }
+  if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
+    cy -= MOVE_SPEED * dt;
+  }
 }
 
 bool Graphics::should_close() const {
