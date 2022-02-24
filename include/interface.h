@@ -34,20 +34,21 @@ public:
   Graphics(const Engine &engine_i);
   ~Graphics();
   int initialize();
-  void render_tick(float dt);
+  void render_tick(const float dt);
   bool should_close() const;
 private:
   GLFWwindow *window;
   const Engine &engine;
 
   unsigned int num_pts, num_tris;
-  std::pair<unsigned int, unsigned int> calc_icosphere_size(unsigned int iters);
+  std::pair<unsigned int, unsigned int> calc_icosphere_size(const unsigned int iters) const;
 
   unsigned int VAO, VBO, EBO;
   unsigned int vertex_shader, fragment_shader, shader_program;
   int transform_loc;
 
-  glm::mat4 proj;
+  glm::mat4 proj, identity;
+  glm::vec3 cup;
   float cx, cy, cz, cphi, ctheta;
   void handle_input(float dt);
 };

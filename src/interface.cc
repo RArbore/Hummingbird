@@ -63,20 +63,20 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
   {8, 6, 7},
   {9, 8, 1},
 };
-static constexpr unsigned int ICOSPHERE_ITERS = 3;
+static constexpr unsigned int ICOSPHERE_ITERS = 4;
 
 static constexpr float MOVE_SPEED = 40.0f;
-static constexpr float SENSITIVITY = 0.0017f;
+static constexpr float SENSITIVITY = 1.0f;
 
-Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i),
-					    cx(0.0f), cy(0.0f), cz(0.0f), cphi(0.0f), ctheta(0.0f) {}
+Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i), identity(1.0f),
+					    cup(0.0f, 1.0f, 0.0f), cx(0.0f), cy(0.0f), cz(0.0f), cphi(0.0f), ctheta(0.0f) {}
 
 Graphics::~Graphics() {
   if (window) glfwDestroyWindow(window);
   glfwTerminate();
 }
 
-std::pair<unsigned int, unsigned int> Graphics::calc_icosphere_size(unsigned int iters) {
+std::pair<unsigned int, unsigned int> Graphics::calc_icosphere_size(const unsigned int iters) const {
   if (iters == 0) return {12, 20};
   auto prev = calc_icosphere_size(iters  - 1);
   return {prev.first + prev.second * 3, prev.second * 4};
@@ -254,30 +254,26 @@ int Graphics::initialize() {
   return 0;
 }
 
-void Graphics::render_tick(float dt) {
+void Graphics::render_tick(const float dt) {
   handle_input(dt);
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (resized) {
-    proj = glm::perspective(glm::radians(45.0f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 1000.0f);
+    proj = glm::perspective(glm::radians(80.0f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 1000.0f);
   }
-  glm::mat4 identity = glm::mat4(1.0f);
   glm::vec3 cdir = glm::vec3(cos(ctheta) * cos(cphi), sin(cphi), sin(ctheta) * cos(cphi));
   glm::vec3 cpos = glm::vec3(cx, cy, cz);
-  glm::vec3 cfront = glm::normalize(cdir);
-  glm::vec3 cup = glm::vec3(0.0f, 1.0f, 0.0f);
-  glm::mat4 view = glm::lookAt(cpos, cpos + cfront, cup);
+  glm::mat4 view = glm::lookAt(cpos, cpos + cdir, cup);
   glm::mat4 proj_view = proj * view;
   for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
     const Collider* coll = engine.get_colliders().at(i).get();
     if (const SphereCollider* sphere_coll = dynamic_cast<const SphereCollider*>(coll)) {
       float scale_factor = inv_golden_ratio * sphere_coll->radius;
-      glm::mat4 scale = glm::scale(identity, glm::vec3(scale_factor, scale_factor, scale_factor));
       const auto& quat = engine.get_ang_pos().at(i);
       glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
       glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
-      glm::mat4 transform = proj_view * model_pos * model_rot * scale;
+      glm::mat4 transform = proj_view * model_pos * model_rot * scale_factor;
       glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform));
       glDrawElements(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0);
     }
@@ -313,8 +309,8 @@ void Graphics::handle_input(float dt) {
   }
 
   if (mouse_moved && !first_mouse) {
-    float offset_x = (recent_x - last_x) * SENSITIVITY;
-    float offset_y = (last_y - recent_y) * SENSITIVITY;
+    float offset_x = (recent_x - last_x) * SENSITIVITY * dt;
+    float offset_y = (last_y - recent_y) * SENSITIVITY * dt;
     ctheta += offset_x;
     cphi += offset_y;
     if (cphi > 1.5f) cphi = 1.5f;

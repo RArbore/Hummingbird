@@ -69,7 +69,7 @@ int Config::initialize() {
 		      [](const Json::Value &jv) { return jv.isString(); }))
       return -1;
     if (type == "SPHERE") {
-      float x, y, z, m, r;
+      float x = 0.0f, y = 0.0f, z = 0.0f, m = 0.0f, r = 0.0f;
       if (init_constant(val, "x", x,
 			[](const Json::Value &jv) { return jv.isNumeric(); }))
 	return -1;
