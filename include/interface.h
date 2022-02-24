@@ -14,6 +14,8 @@
 
 #include <iostream>
 #include <variant>
+#include <math.h>
+#include <tuple>
 
 #include <GL/gl.h>
 #include <GLFW/glfw3.h>
@@ -37,6 +39,9 @@ public:
 private:
   GLFWwindow *window;
   const Engine &engine;
+
+  unsigned int num_pts, num_tris;
+  std::pair<unsigned int, unsigned int> calc_icosphere_size(unsigned int iters);
 
   unsigned int VAO, VBO, EBO;
   unsigned int vertex_shader, fragment_shader, shader_program;

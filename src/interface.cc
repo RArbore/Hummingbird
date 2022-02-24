@@ -63,9 +63,10 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
   {8, 6, 7},
   {9, 8, 1},
 };
+static constexpr unsigned int ICOSPHERE_ITERS = 3;
 
-static constexpr float MOVE_SPEED = 10.0f;
-static constexpr float SENSITIVITY = 0.001f;
+static constexpr float MOVE_SPEED = 40.0f;
+static constexpr float SENSITIVITY = 0.0017f;
 
 Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i),
 					    cx(0.0f), cy(0.0f), cz(0.0f), cphi(0.0f), ctheta(0.0f) {}
@@ -73,6 +74,12 @@ Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i),
 Graphics::~Graphics() {
   if (window) glfwDestroyWindow(window);
   glfwTerminate();
+}
+
+std::pair<unsigned int, unsigned int> Graphics::calc_icosphere_size(unsigned int iters) {
+  if (iters == 0) return {12, 20};
+  auto prev = calc_icosphere_size(iters  - 1);
+  return {prev.first + prev.second * 3, prev.second * 4};
 }
 
 int Graphics::initialize() {
@@ -155,8 +162,94 @@ int Graphics::initialize() {
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
   glEnableVertexAttribArray(0);
 
-  glBufferData(GL_ARRAY_BUFFER, 12 * 3 * sizeof(float), icosphere_base_pts, GL_STATIC_DRAW);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, 20 * 3 * sizeof(unsigned int), icosphere_base_tris, GL_STATIC_DRAW);
+  auto icosphere_size = calc_icosphere_size(ICOSPHERE_ITERS);
+  std::vector<float> icosphere_pts;
+  std::vector<unsigned int> icosphere_tris;
+  num_pts = icosphere_size.first;
+  num_tris = icosphere_size.second;
+  icosphere_pts.reserve(num_pts * 3);
+  icosphere_pts.resize(12 * 3);
+  memcpy(icosphere_pts.data(), icosphere_base_pts, 12 * 3 * sizeof(float));
+  for (auto iter = icosphere_pts.begin(); iter != icosphere_pts.end(); ++iter) {
+    *iter = *iter / sqrt(golden_ratio * golden_ratio + 1);
+  }
+  icosphere_tris.reserve(num_tris * 3);
+  icosphere_tris.resize(20 * 3);
+  memcpy(icosphere_tris.data(), icosphere_base_tris, 20 * 3 * sizeof(unsigned int));
+
+  std::map<std::tuple<float, float, float>, unsigned int> already_inserted_pts;
+  for (unsigned int i = 0; i < 12; ++i) {
+    already_inserted_pts.insert({{icosphere_base_pts[i][0], icosphere_base_pts[i][1], icosphere_base_pts[i][2]}, i * 3});
+  }
+  for (unsigned int i = 0; i < ICOSPHERE_ITERS; ++i) {
+    std::vector<unsigned int> new_tris;
+    new_tris.reserve(num_tris * 3);
+
+    unsigned int old_pts_end = static_cast<unsigned int>(icosphere_pts.size() / 3);
+    for (unsigned int t = 0; t < icosphere_tris.size(); t += 3) {
+      float x1 = (icosphere_pts.at(3 * icosphere_tris.at(t)) + icosphere_pts.at(3 * icosphere_tris.at(t + 1))) / 2.0f;
+      float x2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1)) + icosphere_pts.at(3 * icosphere_tris.at(t + 2))) / 2.0f;
+      float x3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2)) + icosphere_pts.at(3 * icosphere_tris.at(t))) / 2.0f;
+      float y1 = (icosphere_pts.at(3 * icosphere_tris.at(t) + 1) + icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 1)) / 2.0f;
+      float y2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 1) + icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 1)) / 2.0f;
+      float y3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 1) + icosphere_pts.at(3 * icosphere_tris.at(t) + 1)) / 2.0f;
+      float z1 = (icosphere_pts.at(3 * icosphere_tris.at(t) + 2) + icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 2)) / 2.0f;
+      float z2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 2) + icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 2)) / 2.0f;
+      float z3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 2) + icosphere_pts.at(3 * icosphere_tris.at(t) + 2)) / 2.0f;
+      float m1 = 1.0f / sqrt(x1 * x1 + y1 * y1 + z1 * z1);
+      float m2 = 1.0f / sqrt(x2 * x2 + y2 * y2 + z2 * z2);
+      float m3 = 1.0f / sqrt(x3 * x3 + y3 * y3 + z3 * z3);
+      x1 *= m1;
+      y1 *= m1;
+      z1 *= m1;
+      x2 *= m2;
+      y2 *= m2;
+      z2 *= m2;
+      x3 *= m3;
+      y3 *= m3;
+      z3 *= m3;
+
+      if (!already_inserted_pts.count({x1, y1, z1})) {
+	icosphere_pts.push_back(x1);
+	icosphere_pts.push_back(y1);
+	icosphere_pts.push_back(z1);
+	already_inserted_pts.insert({{x1, y1, z1}, old_pts_end});
+	++old_pts_end;
+      }
+      if (!already_inserted_pts.count({x2, y2, z2})) {
+	icosphere_pts.push_back(x2);
+	icosphere_pts.push_back(y2);
+	icosphere_pts.push_back(z2);
+	already_inserted_pts.insert({{x2, y2, z2}, old_pts_end});
+	++old_pts_end;
+      }
+      if (!already_inserted_pts.count({x3, y3, z3})) {
+	icosphere_pts.push_back(x3);
+	icosphere_pts.push_back(y3);
+	icosphere_pts.push_back(z3);
+	already_inserted_pts.insert({{x3, y3, z3}, old_pts_end});
+	++old_pts_end;
+      }
+
+      new_tris.push_back(icosphere_tris.at(t));
+      new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
+      new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
+      new_tris.push_back(icosphere_tris.at(t + 1));
+      new_tris.push_back(already_inserted_pts.at({x2, y2, z2}));
+      new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
+      new_tris.push_back(icosphere_tris.at(t + 2));
+      new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
+      new_tris.push_back(already_inserted_pts.at({x2, y2, z2}));
+      new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
+      new_tris.push_back(already_inserted_pts.at({x2, y2, z2}));
+      new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
+    }
+    
+    icosphere_tris = std::move(new_tris);
+  }
+  
+  glBufferData(GL_ARRAY_BUFFER, icosphere_size.first * 3 * sizeof(float), icosphere_pts.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, icosphere_size.second * 3 * sizeof(unsigned int), icosphere_tris.data(), GL_STATIC_DRAW);
 
   return 0;
 }
@@ -167,7 +260,7 @@ void Graphics::render_tick(float dt) {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   if (resized) {
-    proj = glm::perspective(glm::radians(45.0f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 100.0f);
+    proj = glm::perspective(glm::radians(45.0f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 1000.0f);
   }
   glm::mat4 identity = glm::mat4(1.0f);
   glm::vec3 cdir = glm::vec3(cos(ctheta) * cos(cphi), sin(cphi), sin(ctheta) * cos(cphi));
@@ -186,7 +279,7 @@ void Graphics::render_tick(float dt) {
       glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
       glm::mat4 transform = proj_view * model_pos * model_rot * scale;
       glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform));
-      glDrawElements(GL_TRIANGLES, 20 * 3, GL_UNSIGNED_INT, 0);
+      glDrawElements(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0);
     }
   }
 
