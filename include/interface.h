@@ -51,4 +51,5 @@ private:
   glm::vec3 cup;
   float cx, cy, cz, cphi, ctheta;
   void handle_input(float dt);
+  glm::mat4* transform_cache;
 };

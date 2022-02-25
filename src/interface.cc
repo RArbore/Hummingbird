@@ -251,6 +251,8 @@ int Graphics::initialize() {
   glBufferData(GL_ARRAY_BUFFER, icosphere_size.first * 3 * sizeof(float), icosphere_pts.data(), GL_STATIC_DRAW);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, icosphere_size.second * 3 * sizeof(unsigned int), icosphere_tris.data(), GL_STATIC_DRAW);
 
+  transform_cache = new glm::mat4[engine.get_num_bodies()];
+
   return 0;
 }
 
@@ -266,6 +268,8 @@ void Graphics::render_tick(const float dt) {
   glm::vec3 cpos = glm::vec3(cx, cy, cz);
   glm::mat4 view = glm::lookAt(cpos, cpos + cdir, cup);
   glm::mat4 proj_view = proj * view;
+
+#pragma omp parallel for
   for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
     const Collider* coll = engine.get_colliders().at(i).get();
     if (const SphereCollider* sphere_coll = dynamic_cast<const SphereCollider*>(coll)) {
@@ -273,12 +277,15 @@ void Graphics::render_tick(const float dt) {
       const auto& quat = engine.get_ang_pos().at(i);
       glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
       glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
-      glm::mat4 transform = proj_view * model_pos * model_rot * scale_factor;
-      glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform));
-      glDrawElements(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0);
+      transform_cache[i] = proj_view * model_pos * model_rot * scale_factor;
     }
   }
 
+  for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
+    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform_cache[i]));
+    glDrawElements(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0);
+  }
+  
   glfwSwapBuffers(window);
   resized = false;
 }
