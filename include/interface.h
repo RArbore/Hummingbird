@@ -24,6 +24,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <omp.h>
+
 #include <physics/engine.h>
 
 void mouse_callback(GLFWwindow* window, double x, double y);

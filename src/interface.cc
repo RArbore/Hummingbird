@@ -24,6 +24,7 @@ static int width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
 static bool resized = true, mouse_moved = false, first_mouse = true;
 
 static float last_x = 0.0f, last_y = 0.0f, recent_x = 0.0f, recent_y = 0.0f;
+static omp_lock_t mouse_lock;
 
 static constexpr float golden_ratio = 1.6180339887f;
 static constexpr float inv_golden_ratio = 1.0f / golden_ratio;
@@ -63,7 +64,7 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
   {8, 6, 7},
   {9, 8, 1},
 };
-static constexpr unsigned int ICOSPHERE_ITERS = 4;
+static constexpr unsigned int ICOSPHERE_ITERS = 2;
 
 static constexpr float MOVE_SPEED = 40.0f;
 static constexpr float SENSITIVITY = 1.0f;
@@ -83,6 +84,8 @@ std::pair<unsigned int, unsigned int> Graphics::calc_icosphere_size(const unsign
 }
 
 int Graphics::initialize() {
+  omp_init_lock(&mouse_lock);
+
   if (!glfwInit()) {
     std::cerr << "ERROR: Couldn't initialize GLFW. Aborting." << std::endl;
     return -1;
@@ -315,6 +318,7 @@ void Graphics::handle_input(float dt) {
     cy -= MOVE_SPEED * dt;
   }
 
+  omp_set_lock(&mouse_lock);
   if (mouse_moved && !first_mouse) {
     float offset_x = (recent_x - last_x) * SENSITIVITY * dt;
     float offset_y = (last_y - recent_y) * SENSITIVITY * dt;
@@ -328,6 +332,7 @@ void Graphics::handle_input(float dt) {
     first_mouse = false;
     mouse_moved = false;
   }
+  omp_unset_lock(&mouse_lock);
 }
 
 bool Graphics::should_close() const {
@@ -335,11 +340,13 @@ bool Graphics::should_close() const {
 }
 
 void mouse_callback([[maybe_unused]] GLFWwindow* window, double x, double y) {
+  omp_set_lock(&mouse_lock);
   last_x = recent_x;
   last_y = recent_y;
   recent_x = static_cast<float>(x);
   recent_y = static_cast<float>(y);
   mouse_moved = true;
+  omp_unset_lock(&mouse_lock);
 }
 
 void resize_callback([[maybe_unused]] GLFWwindow* window, int new_width, int new_height) {
