@@ -45,6 +45,22 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
       }
     }, vari);
   }
+  for (float x = 0; x < 30; ++x) {
+    for (float y = 0; y < 30; ++y) {
+      for (float z = 0; z < 30; ++z) {
+	pos.x.push_back(x * 3);
+	pos.y.push_back(y * 3);
+	pos.z.push_back(z * 3);
+	vel.x.push_back(0.0f);
+	vel.y.push_back(0.0f);
+	vel.z.push_back(0.0f);
+	mass.push_back(1.0f);
+	ang_pos.push_back(Quaternion{0.0f, 0.0f, 0.0f, 0.0f});
+	colliders.push_back(std::make_unique<SphereCollider>(1.0f));
+      }
+    }
+  }
+  num_bodies += 30 * 30 * 30;
 }
 
 const Engine::Vec3x<float> &Engine::get_pos() const { return pos; }

@@ -66,6 +66,8 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
 };
 static constexpr unsigned int ICOSPHERE_ITERS = 2;
 
+static constexpr unsigned int UNIFORM_POW_2_SIZE = 3;
+
 static constexpr float MOVE_SPEED = 40.0f;
 static constexpr float SENSITIVITY = 1.0f;
 
@@ -255,7 +257,7 @@ int Graphics::initialize() {
   glBufferData(GL_ARRAY_BUFFER, icosphere_size.first * 3 * sizeof(float), icosphere_pts.data(), GL_STATIC_DRAW);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, icosphere_size.second * 3 * sizeof(unsigned int), icosphere_tris.data(), GL_STATIC_DRAW);
 
-  model_cache = new glm::mat4[engine.get_num_bodies()];
+  model_cache = new glm::mat4[engine.get_num_bodies() + (1 << UNIFORM_POW_2_SIZE)];
 
   return 0;
 }
@@ -285,8 +287,14 @@ void Graphics::render_tick(const float dt) {
     }
   }
 
+  unsigned int pow2 = 1 << UNIFORM_POW_2_SIZE;
   glUniformMatrix4fv(proj_view_loc, 1, GL_FALSE, glm::value_ptr(proj_view));
-  for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
+  std::size_t i;
+  for (i = 0; i <= engine.get_num_bodies() - pow2; i += pow2) {
+    glUniformMatrix4fv(model_loc, static_cast<int>(pow2), GL_FALSE, glm::value_ptr(model_cache[i]));
+    glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0, static_cast<int>(pow2));
+  }
+  for (; i < engine.get_num_bodies(); ++i) {
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model_cache[i]));
     glDrawElements(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0);
   }
