@@ -66,7 +66,7 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
 };
 static constexpr unsigned int ICOSPHERE_ITERS = 2;
 
-static constexpr unsigned int UNIFORM_POW_2_SIZE = 6;
+static constexpr unsigned int UNIFORM_SIZE = 120;
 
 static constexpr float MOVE_SPEED = 40.0f;
 static constexpr float SENSITIVITY = 1.0f;
@@ -246,8 +246,8 @@ int Graphics::initialize() {
     icosphere_tris = std::move(new_tris);
   }
   
-  model_cache = new glm::mat4[engine.get_num_bodies() + (1 << UNIFORM_POW_2_SIZE)];
-  normal_cache = new glm::mat4[engine.get_num_bodies() + (1 << UNIFORM_POW_2_SIZE)];
+  model_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
+  normal_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
 
   glGenVertexArrays(1, &VAO);
   glBindVertexArray(VAO);
@@ -306,13 +306,12 @@ void Graphics::render_tick(const float dt) {
     }
   }
 
-  unsigned int pow2 = 1 << UNIFORM_POW_2_SIZE;
   glUniformMatrix4fv(proj_view_loc, 1, GL_FALSE, glm::value_ptr(proj_view));
   std::size_t i;
-  for (i = 0; i <= engine.get_num_bodies() - pow2; i += pow2) {
-    glUniformMatrix4fv(model_loc, static_cast<int>(pow2), GL_FALSE, glm::value_ptr(model_cache[i]));
-    glUniformMatrix4fv(normal_loc, static_cast<int>(pow2), GL_FALSE, glm::value_ptr(normal_cache[i]));
-    glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0, static_cast<int>(pow2));
+  for (i = 0; i <= engine.get_num_bodies() - UNIFORM_SIZE; i += UNIFORM_SIZE) {
+    glUniformMatrix4fv(model_loc, static_cast<int>(UNIFORM_SIZE), GL_FALSE, glm::value_ptr(model_cache[i]));
+    glUniformMatrix4fv(normal_loc, static_cast<int>(UNIFORM_SIZE), GL_FALSE, glm::value_ptr(normal_cache[i]));
+    glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0, static_cast<int>(UNIFORM_SIZE));
   }
   for (; i < engine.get_num_bodies(); ++i) {
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model_cache[i]));
