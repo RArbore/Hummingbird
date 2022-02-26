@@ -47,11 +47,12 @@ private:
 
   unsigned int VAO, VBO, EBO;
   unsigned int vertex_shader, fragment_shader, shader_program;
-  int proj_view_loc, model_loc;
+    int proj_view_loc, model_loc, normal_loc;
 
   glm::mat4 proj, identity;
   glm::vec3 cup;
   float cx, cy, cz, cphi, ctheta;
   void handle_input(float dt);
   glm::mat4* model_cache;
+  glm::mat4* normal_cache;
 };

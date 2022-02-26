@@ -66,7 +66,7 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
 };
 static constexpr unsigned int ICOSPHERE_ITERS = 2;
 
-static constexpr unsigned int UNIFORM_POW_2_SIZE = 7;
+static constexpr unsigned int UNIFORM_POW_2_SIZE = 6;
 
 static constexpr float MOVE_SPEED = 40.0f;
 static constexpr float SENSITIVITY = 1.0f;
@@ -112,15 +112,6 @@ int Graphics::initialize() {
   glEnable(GL_CULL_FACE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-  glGenBuffers(1, &EBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
   const char* const vertex_shader_text = &_binary_shaders_vertex_glsl_start;
   const char* const fragment_shader_text = &_binary_shaders_fragment_glsl_start;
   int shader_comp_success = 0;
@@ -134,6 +125,7 @@ int Graphics::initialize() {
     glGetShaderInfoLog(vertex_shader, 1024, nullptr, error_log);
     std::cerr << "ERROR: Couldn't compile the vertex shader. Here's the GL error log:" << std::endl;
     std::cerr << error_log << std::endl;
+    return -1;
   }
 
   fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -145,6 +137,7 @@ int Graphics::initialize() {
     glGetShaderInfoLog(fragment_shader, 1024, nullptr, error_log);
     std::cerr << "ERROR: Couldn't compile the fragment shader. Here's the GL error log:" << std::endl;
     std::cerr << error_log << std::endl;
+    return -1;
   }
 
   shader_program = glCreateProgram();
@@ -157,6 +150,7 @@ int Graphics::initialize() {
     glGetShaderInfoLog(shader_program, 1024, nullptr, error_log);
     std::cerr << "ERROR: Couldn't link the complete shader program. Here's the GL error log:" << std::endl;
     std::cerr << error_log << std::endl;
+    return -1;
   }
   glUseProgram(shader_program);
   glDeleteShader(vertex_shader);
@@ -164,9 +158,7 @@ int Graphics::initialize() {
 
   proj_view_loc = glGetUniformLocation(shader_program, "proj_view");
   model_loc = glGetUniformLocation(shader_program, "model");
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-  glEnableVertexAttribArray(0);
+  normal_loc = glGetUniformLocation(shader_program, "normal");
 
   auto icosphere_size = calc_icosphere_size(ICOSPHERE_ITERS);
   std::vector<float> icosphere_pts;
@@ -254,10 +246,36 @@ int Graphics::initialize() {
     icosphere_tris = std::move(new_tris);
   }
   
-  glBufferData(GL_ARRAY_BUFFER, icosphere_size.first * 3 * sizeof(float), icosphere_pts.data(), GL_STATIC_DRAW);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, icosphere_size.second * 3 * sizeof(unsigned int), icosphere_tris.data(), GL_STATIC_DRAW);
-
   model_cache = new glm::mat4[engine.get_num_bodies() + (1 << UNIFORM_POW_2_SIZE)];
+  normal_cache = new glm::mat4[engine.get_num_bodies() + (1 << UNIFORM_POW_2_SIZE)];
+
+  glGenVertexArrays(1, &VAO);
+  glBindVertexArray(VAO);
+
+  glGenBuffers(1, &VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+  glGenBuffers(1, &EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
+  std::vector<float> icosphere_pts_with_norms;
+  icosphere_pts_with_norms.reserve(icosphere_pts.size());
+  for (std::size_t i = 0; i < icosphere_pts.size(); i += 3) {
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
+  }
+
+  glBufferData(GL_ARRAY_BUFFER, icosphere_size.first * 3 * sizeof(float), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, icosphere_size.second * 3 * sizeof(unsigned int), icosphere_tris.data(), GL_STATIC_DRAW);
 
   return 0;
 }
@@ -284,6 +302,7 @@ void Graphics::render_tick(const float dt) {
       glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
       glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
       model_cache[i] = model_pos * model_rot * scale_factor;
+      normal_cache[i] = glm::inverse(model_cache[i]);
     }
   }
 
@@ -292,10 +311,12 @@ void Graphics::render_tick(const float dt) {
   std::size_t i;
   for (i = 0; i <= engine.get_num_bodies() - pow2; i += pow2) {
     glUniformMatrix4fv(model_loc, static_cast<int>(pow2), GL_FALSE, glm::value_ptr(model_cache[i]));
+    glUniformMatrix4fv(normal_loc, static_cast<int>(pow2), GL_FALSE, glm::value_ptr(normal_cache[i]));
     glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0, static_cast<int>(pow2));
   }
   for (; i < engine.get_num_bodies(); ++i) {
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model_cache[i]));
+    glUniformMatrix4fv(normal_loc, 1, GL_FALSE, glm::value_ptr(normal_cache[i]));
     glDrawElements(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0);
   }
   
