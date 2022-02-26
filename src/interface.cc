@@ -274,7 +274,7 @@ int Graphics::initialize() {
       icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
   }
 
-  glBufferData(GL_ARRAY_BUFFER, icosphere_size.first * 3 * sizeof(float), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, icosphere_size.first * 6 * sizeof(float), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, icosphere_size.second * 3 * sizeof(unsigned int), icosphere_tris.data(), GL_STATIC_DRAW);
 
   return 0;
