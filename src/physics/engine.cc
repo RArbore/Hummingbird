@@ -45,9 +45,9 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
       }
     }, vari);
   }
-  for (float x = 0; x < 30; ++x) {
-    for (float y = 0; y < 30; ++y) {
-      for (float z = 0; z < 30; ++z) {
+  for (float x = 0; x < 50; ++x) {
+    for (float y = 0; y < 50; ++y) {
+      for (float z = 0; z < 50; ++z) {
 	pos.x.push_back(x * 3);
 	pos.y.push_back(y * 3);
 	pos.z.push_back(z * 3);
@@ -60,7 +60,7 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
       }
     }
   }
-  num_bodies += 30 * 30 * 30;
+  num_bodies += 50 * 50 * 50;
 }
 
 const Engine::Vec3x<float> &Engine::get_pos() const { return pos; }

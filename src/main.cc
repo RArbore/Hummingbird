@@ -17,6 +17,7 @@
 #include <interface.h>
 #include <cli.h>
 
+__attribute__((always_inline))
 inline unsigned long long micro_sec() {
     return static_cast<unsigned long long>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count());
 }

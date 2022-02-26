@@ -66,7 +66,7 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
 };
 static constexpr unsigned int ICOSPHERE_ITERS = 2;
 
-static constexpr unsigned int UNIFORM_POW_2_SIZE = 3;
+static constexpr unsigned int UNIFORM_POW_2_SIZE = 7;
 
 static constexpr float MOVE_SPEED = 40.0f;
 static constexpr float SENSITIVITY = 1.0f;
