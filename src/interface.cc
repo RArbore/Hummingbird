@@ -160,7 +160,8 @@ int Graphics::initialize() {
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
 
-  transform_loc = glGetUniformLocation(shader_program, "transform");
+  proj_view_loc = glGetUniformLocation(shader_program, "proj_view");
+  model_loc = glGetUniformLocation(shader_program, "model");
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
   glEnableVertexAttribArray(0);
@@ -254,7 +255,7 @@ int Graphics::initialize() {
   glBufferData(GL_ARRAY_BUFFER, icosphere_size.first * 3 * sizeof(float), icosphere_pts.data(), GL_STATIC_DRAW);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, icosphere_size.second * 3 * sizeof(unsigned int), icosphere_tris.data(), GL_STATIC_DRAW);
 
-  transform_cache = new glm::mat4[engine.get_num_bodies()];
+  model_cache = new glm::mat4[engine.get_num_bodies()];
 
   return 0;
 }
@@ -280,12 +281,13 @@ void Graphics::render_tick(const float dt) {
       const auto& quat = engine.get_ang_pos().at(i);
       glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
       glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
-      transform_cache[i] = proj_view * model_pos * model_rot * scale_factor;
+      model_cache[i] = model_pos * model_rot * scale_factor;
     }
   }
 
+  glUniformMatrix4fv(proj_view_loc, 1, GL_FALSE, glm::value_ptr(proj_view));
   for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
-    glUniformMatrix4fv(transform_loc, 1, GL_FALSE, glm::value_ptr(transform_cache[i]));
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model_cache[i]));
     glDrawElements(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0);
   }
   
