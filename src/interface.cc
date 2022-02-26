@@ -77,6 +77,9 @@ Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i), i
 Graphics::~Graphics() {
   if (window) glfwDestroyWindow(window);
   glfwTerminate();
+  omp_destroy_lock(&mouse_lock);
+  delete[] model_cache;
+  delete[] normal_cache;
 }
 
 std::pair<unsigned int, unsigned int> Graphics::calc_icosphere_size(const unsigned int iters) const {
@@ -274,8 +277,8 @@ int Graphics::initialize() {
       icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
   }
 
-  glBufferData(GL_ARRAY_BUFFER, icosphere_size.first * 6 * sizeof(float), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, icosphere_size.second * 3 * sizeof(unsigned int), icosphere_tris.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, static_cast<long int>(icosphere_pts_with_norms.size() * sizeof(float)), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<long int>(icosphere_tris.size() * sizeof(unsigned int)), icosphere_tris.data(), GL_STATIC_DRAW);
 
   return 0;
 }

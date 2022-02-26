@@ -47,7 +47,7 @@ private:
 
   unsigned int VAO, VBO, EBO;
   unsigned int vertex_shader, fragment_shader, shader_program;
-    int proj_view_loc, model_loc, normal_loc;
+  int proj_view_loc, model_loc, normal_loc;
 
   glm::mat4 proj, identity;
   glm::vec3 cup;
