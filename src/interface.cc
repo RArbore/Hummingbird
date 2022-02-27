@@ -124,6 +124,7 @@ int Graphics::initialize() {
     glGetShaderInfoLog(vertex_shader, 1024, nullptr, error_log);
     std::cerr << "ERROR: Couldn't compile the vertex shader. Here's the GL error log:" << std::endl;
     std::cerr << error_log << std::endl;
+    delete[] error_log;
     return -1;
   }
 
@@ -136,6 +137,7 @@ int Graphics::initialize() {
     glGetShaderInfoLog(fragment_shader, 1024, nullptr, error_log);
     std::cerr << "ERROR: Couldn't compile the fragment shader. Here's the GL error log:" << std::endl;
     std::cerr << error_log << std::endl;
+    delete[] error_log;
     return -1;
   }
 
@@ -149,6 +151,7 @@ int Graphics::initialize() {
     glGetShaderInfoLog(shader_program, 1024, nullptr, error_log);
     std::cerr << "ERROR: Couldn't link the complete shader program. Here's the GL error log:" << std::endl;
     std::cerr << error_log << std::endl;
+    delete[] error_log;
     return -1;
   }
   glUseProgram(shader_program);
