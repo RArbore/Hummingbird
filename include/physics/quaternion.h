@@ -40,6 +40,5 @@ struct Matrix3 {
   float arr[9];
 
   Matrix3() = default; 
-  Matrix3(const Quaternion& q); 
-  ~Matrix3() = default; 
+  explicit Matrix3(const Quaternion& q); 
 };

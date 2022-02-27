@@ -10,7 +10,7 @@
     You should have received a copy of the GNU General Public License
     along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.  */
 
-#include "physics/engine.h"
+#include <physics/engine.h>
 
 Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 				   num_bodies(cfg.num_bodies),
@@ -51,9 +51,12 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 	pos.x.push_back(x * 3);
 	pos.y.push_back(y * 3);
 	pos.z.push_back(z * 3);
-	vel.x.push_back(0.0f);
-	vel.y.push_back(0.0f);
-	vel.z.push_back(0.0f);
+	vel.x.push_back(x);
+	vel.y.push_back(y);
+	vel.z.push_back(z);
+	acc.x.push_back(0.0f);
+	acc.y.push_back(0.0f);
+	acc.z.push_back(0.0f);
 	mass.push_back(1.0f);
 	ang_pos.push_back(Quaternion{0.0f, 0.0f, 0.0f, 0.0f});
 	colliders.push_back(std::make_unique<SphereCollider>(1.0f));

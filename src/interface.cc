@@ -303,11 +303,13 @@ void Graphics::render_tick(const float dt) {
   }
 
   glUniformMatrix4fv(proj_view_loc, 1, GL_FALSE, glm::value_ptr(proj_view));
-  std::size_t i;
-  for (i = 0; i <= engine.get_num_bodies() - UNIFORM_SIZE; i += UNIFORM_SIZE) {
-    glUniformMatrix4fv(model_loc, static_cast<int>(UNIFORM_SIZE), GL_FALSE, glm::value_ptr(model_cache[i]));
-    glUniformMatrix4fv(normal_loc, static_cast<int>(UNIFORM_SIZE), GL_FALSE, glm::value_ptr(normal_cache[i]));
-    glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0, static_cast<int>(UNIFORM_SIZE));
+  std::size_t i = 0;
+  if (engine.get_num_bodies() >= UNIFORM_SIZE) {
+    for (; i <= engine.get_num_bodies() - UNIFORM_SIZE; i += UNIFORM_SIZE) {
+      glUniformMatrix4fv(model_loc, static_cast<int>(UNIFORM_SIZE), GL_FALSE, glm::value_ptr(model_cache[i]));
+      glUniformMatrix4fv(normal_loc, static_cast<int>(UNIFORM_SIZE), GL_FALSE, glm::value_ptr(normal_cache[i]));
+      glDrawElementsInstanced(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0, static_cast<int>(UNIFORM_SIZE));
+    }
   }
   for (; i < engine.get_num_bodies(); ++i) {
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model_cache[i]));

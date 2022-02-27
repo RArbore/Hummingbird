@@ -10,7 +10,7 @@
     You should have received a copy of the GNU General Public License
     along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.  */
 
-#include "physics/quaternion.h"
+#include <physics/quaternion.h>
 
 void Quaternion::normalize() {
   float factor = invSquareRoot(x*x + y*y + z*z + w*w); 

@@ -10,7 +10,7 @@
     You should have received a copy of the GNU General Public License
     along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.  */
 
-#include "physics/collider.h"
+#include <physics/collider.h>
 
 SphereCollider::SphereCollider(float radius_i): radius(radius_i) {}
 

@@ -12,14 +12,15 @@
 
 #pragma once
 
+#include <immintrin.h>
 #include <cstddef>
 #include <variant>
 #include <vector>
 #include <memory>
 
-#include "physics/quaternion.h"
-#include "physics/collider.h"
-#include "cli.h"
+#include <physics/quaternion.h>
+#include <physics/collider.h>
+#include <cli.h>
 
 /**
  * @brief Context for physics calculations
@@ -28,7 +29,7 @@
 
 class Engine {
 public:
-  Engine(const Config& cfg);
+  explicit Engine(const Config& cfg);
 
   void update(const float dt);
 
