@@ -18,6 +18,8 @@
 #include <vector>
 #include <memory>
 
+#include <boost/align/aligned_allocator.hpp>
+
 #include <physics/quaternion.h>
 #include <physics/collider.h>
 #include <cli.h>
@@ -33,16 +35,16 @@ public:
 
   void update(const float dt);
 
-  template <typename T>
+  template <typename T, std::size_t align>
   struct Vec3x {
-    std::vector<T> x;
-    std::vector<T> y;
-    std::vector<T> z;
+    std::vector<T, boost::alignment::aligned_allocator<T, align>> x;
+    std::vector<T, boost::alignment::aligned_allocator<T, align>> y;
+    std::vector<T, boost::alignment::aligned_allocator<T, align>> z;
   };
 
-  const Vec3x<float> &get_pos() const;
-  const Vec3x<float> &get_vel() const;
-  const Vec3x<float> &get_acc() const;
+  const Vec3x<float, 32> &get_pos() const;
+  const Vec3x<float, 32> &get_vel() const;
+  const Vec3x<float, 32> &get_acc() const;
   const std::vector<float> &get_mass() const;
   const std::vector<Quaternion> &get_ang_pos() const;
   const std::vector<std::unique_ptr<Collider>> &get_colliders() const;
@@ -53,12 +55,14 @@ private:
   std::size_t num_bodies;
 
   // Dynamics data
-  Vec3x<float> pos;
-  Vec3x<float> vel;
-  Vec3x<float> acc;
+  Vec3x<float, 32> pos;
+  Vec3x<float, 32> vel;
+  Vec3x<float, 32> acc;
   std::vector<float> mass;
   std::vector<Quaternion> ang_pos;
   std::vector<std::unique_ptr<Collider>> colliders;
 
-  Transform getTransformAt(const std::size_t i);
+  Transform get_transform_at(const std::size_t i);
+  void update_dynamics(const float dt);
+  void fused_multiply_add(const float dt, __m256& dt_a, float *const a, float *const b);
 };

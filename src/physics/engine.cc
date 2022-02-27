@@ -12,9 +12,11 @@
 
 #include <physics/engine.h>
 
+using vector32f = std::vector<float, boost::alignment::aligned_allocator<float, 32>>;
+
 Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 				   num_bodies(cfg.num_bodies),
-				   acc{std::vector<float>(num_bodies, 0.0f), std::vector<float>(num_bodies, 0.0f), std::vector<float>(num_bodies, 0.0f)} {
+				   acc{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)} {
   pos.x.reserve(num_bodies);
   pos.y.reserve(num_bodies);
   pos.z.reserve(num_bodies);
@@ -66,18 +68,43 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
   num_bodies += 50 * 50 * 50;
 }
 
-const Engine::Vec3x<float> &Engine::get_pos() const { return pos; }
-const Engine::Vec3x<float> &Engine::get_vel() const { return vel; }
-const Engine::Vec3x<float> &Engine::get_acc() const { return acc; }
+const Engine::Vec3x<float, 32> &Engine::get_pos() const { return pos; }
+const Engine::Vec3x<float, 32> &Engine::get_vel() const { return vel; }
+const Engine::Vec3x<float, 32> &Engine::get_acc() const { return acc; }
 const std::vector<float> &Engine::get_mass() const { return mass; }
 const std::vector<Quaternion> &Engine::get_ang_pos() const { return ang_pos; }
 const std::vector<std::unique_ptr<Collider>> &Engine::get_colliders() const { return colliders; }
 std::size_t Engine::get_num_bodies() const { return num_bodies; }
 
 void Engine::update(const float dt) {
-
+  update_dynamics(dt);
 }
 
-Transform Engine::getTransformAt(const std::size_t i) {
+void Engine::update_dynamics(const float dt) {
+  __m256 dt_a = _mm256_set_ps(dt, dt, dt, dt, dt, dt, dt, dt);
+  fused_multiply_add(dt, dt_a, vel.x.data(), acc.x.data());
+  fused_multiply_add(dt, dt_a, vel.y.data(), acc.y.data());
+  fused_multiply_add(dt, dt_a, vel.z.data(), acc.z.data());
+  fused_multiply_add(dt, dt_a, pos.x.data(), vel.x.data());
+  fused_multiply_add(dt, dt_a, pos.y.data(), vel.y.data());
+  fused_multiply_add(dt, dt_a, pos.z.data(), vel.z.data());
+}
+
+void Engine::fused_multiply_add(const float dt, __m256& dt_a, float *const a, float *const b) {
+  std::size_t i = 0;
+  if (num_bodies >= 8) {
+    for (; i <= num_bodies - 8; i += 8) {
+      __m256 a_a = _mm256_set_ps(a[i + 7], a[i + 6], a[i + 5], a[i + 4], a[i + 3], a[i + 2], a[i + 1], a[i]);
+      __m256 b_a = _mm256_set_ps(b[i + 7], b[i + 6], b[i + 5], b[i + 4], b[i + 3], b[i + 2], b[i + 1], b[i]);
+      __m256 result = _mm256_fmadd_ps(b_a, dt_a, a_a);
+      _mm256_store_ps(a + i, result);
+    }
+  }
+  for (; i < num_bodies; ++i) {
+    a[i] += b[i] * dt;
+  }
+}
+
+Transform Engine::get_transform_at(const std::size_t i) {
   return Transform{pos.x.at(i), pos.y.at(i), pos.z.at(i)};
 }
