@@ -160,19 +160,13 @@ int Graphics::initialize() {
   normal_loc = glGetUniformLocation(shader_program, "normal");
 
   auto icosphere_size = calc_icosphere_size(ICOSPHERE_ITERS);
-  std::vector<float> icosphere_pts;
-  std::vector<unsigned int> icosphere_tris;
+  std::vector<float> icosphere_pts(&icosphere_base_pts[0][0], &icosphere_base_pts[0][0] + 12 * 3);
+  std::vector<unsigned int> icosphere_tris(&icosphere_base_tris[0][0], &icosphere_base_tris[0][0] + 20 * 3);
   num_pts = icosphere_size.first;
   num_tris = icosphere_size.second;
-  icosphere_pts.reserve(num_pts * 3);
-  icosphere_pts.resize(12 * 3);
-  memcpy(icosphere_pts.data(), icosphere_base_pts, 12 * 3 * sizeof(float));
   for (auto iter = icosphere_pts.begin(); iter != icosphere_pts.end(); ++iter) {
     *iter = *iter / sqrt(golden_ratio * golden_ratio + 1);
   }
-  icosphere_tris.reserve(num_tris * 3);
-  icosphere_tris.resize(20 * 3);
-  memcpy(icosphere_tris.data(), icosphere_base_tris, 20 * 3 * sizeof(unsigned int));
 
   std::map<std::tuple<float, float, float>, unsigned int> already_inserted_pts;
   for (unsigned int i = 0; i < 12; ++i) {
