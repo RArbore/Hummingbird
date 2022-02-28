@@ -65,7 +65,7 @@ private:
   std::vector<std::unique_ptr<Collider>> colliders;
 
   Transform get_transform_at(const std::size_t i);
-  inline std::tuple<float, float, float> rk4_accel(const float x, const float y, const float z, const float m);
-  void rk4_update(const float dt);
-  void fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b);
+  void gravity_force_update(const float dt);
+  void dynamics_update(const float dt);
+  void fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b, const float *const m);
 };
