@@ -16,7 +16,8 @@ using vector32f = std::vector<float, boost::alignment::aligned_allocator<float, 
 
 Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 				   num_bodies(cfg.num_bodies),
-				   acc{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)} {
+				   acc{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)},
+				   cog_x(0.0f), cog_y(0.0f), cog_z(0.0f), cog_vx(0.0f), cog_vy(0.0f), cog_vz(0.0f), cog_m(0.0f) {
   pos.x.reserve(num_bodies);
   pos.y.reserve(num_bodies);
   pos.z.reserve(num_bodies);
@@ -29,6 +30,7 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
   ang_pos.reserve(num_bodies);
   colliders.reserve(num_bodies);
 
+  num_bodies += 25 * 25 * 25;
   for (auto vari : cfg.bodies) {
     std::visit([&](auto&& body) {
       using T = std::decay_t<decltype(body)>;
@@ -41,31 +43,47 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 	vel.y.push_back(0.0f);
 	vel.z.push_back(0.0f);
 
+	cog_x += body.x / static_cast<float>(num_bodies);
+	cog_y += body.y / static_cast<float>(num_bodies);
+	cog_z += body.z / static_cast<float>(num_bodies);
+	cog_vx += 0.0f / static_cast<float>(num_bodies);
+	cog_vy += 0.0f / static_cast<float>(num_bodies);
+	cog_vz += 0.0f / static_cast<float>(num_bodies);
+	cog_m += body.m / static_cast<float>(num_bodies);
+
 	mass.push_back(body.m);
 	ang_pos.push_back(Quaternion{0.0f, 0.0f, 0.0f, 0.0f});
 	colliders.push_back(std::make_unique<SphereCollider>(body.r));
       }
     }, vari);
   }
-  for (float x = 0; x < 50; ++x) {
-    for (float y = 0; y < 50; ++y) {
-      for (float z = 0; z < 50; ++z) {
-	pos.x.push_back(x * 3);
-	pos.y.push_back(y * 3);
-	pos.z.push_back(z * 3);
+  for (float x = 0; x < 25; ++x) {
+    for (float y = 0; y < 25; ++y) {
+      for (float z = 0; z < 25; ++z) {
+	pos.x.push_back(x * 3.0f);
+	pos.y.push_back(y * 3.0f);
+	pos.z.push_back(z * 3.0f);
 	vel.x.push_back(x);
 	vel.y.push_back(y);
 	vel.z.push_back(z);
 	acc.x.push_back(0.0f);
 	acc.y.push_back(0.0f);
 	acc.z.push_back(0.0f);
+
+	cog_x += x * 3.0f / static_cast<float>(num_bodies);
+	cog_y += y * 3.0f / static_cast<float>(num_bodies);
+	cog_z += z * 3.0f / static_cast<float>(num_bodies);
+	cog_vx += x / static_cast<float>(num_bodies);
+	cog_vy += y / static_cast<float>(num_bodies);
+	cog_vz += z / static_cast<float>(num_bodies);
+	cog_m += 1.0f / static_cast<float>(num_bodies);
+
 	mass.push_back(1.0f);
 	ang_pos.push_back(Quaternion{0.0f, 0.0f, 0.0f, 0.0f});
 	colliders.push_back(std::make_unique<SphereCollider>(1.0f));
       }
     }
   }
-  num_bodies += 50 * 50 * 50;
 }
 
 const Engine::Vec3x<float, 32> &Engine::get_pos() const { return pos; }
@@ -82,9 +100,11 @@ void Engine::update(const float dt) {
 
 void Engine::update_dynamics(const float dt) {
   __m256 dt_a = _mm256_set_ps(dt, dt, dt, dt, dt, dt, dt, dt);
+
   fused_multiply_add(dt, dt_a, vel.x.data(), acc.x.data());
   fused_multiply_add(dt, dt_a, vel.y.data(), acc.y.data());
   fused_multiply_add(dt, dt_a, vel.z.data(), acc.z.data());
+
   fused_multiply_add(dt, dt_a, pos.x.data(), vel.x.data());
   fused_multiply_add(dt, dt_a, pos.y.data(), vel.y.data());
   fused_multiply_add(dt, dt_a, pos.z.data(), vel.z.data());

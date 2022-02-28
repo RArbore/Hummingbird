@@ -58,6 +58,7 @@ private:
   Vec3x<float, 32> pos;
   Vec3x<float, 32> vel;
   Vec3x<float, 32> acc;
+  float cog_x, cog_y, cog_z, cog_vx, cog_vy, cog_vz, cog_m;
   std::vector<float> mass;
   std::vector<Quaternion> ang_pos;
   std::vector<std::unique_ptr<Collider>> colliders;
