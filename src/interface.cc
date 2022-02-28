@@ -297,7 +297,8 @@ void Graphics::render_tick(const float dt) {
       const auto& quat = engine.get_ang_pos().at(i);
       const glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
       const glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
-      model_cache[i] = model_pos * model_rot * glm::mat4(scale_factor);
+      const glm::mat4 model_scale = glm::scale(identity, glm::vec3(scale_factor, scale_factor, scale_factor));
+      model_cache[i] = model_pos * model_rot * model_scale;
       normal_cache[i] = glm::inverse(model_cache[i]);
     }
   }
