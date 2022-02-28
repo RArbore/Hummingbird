@@ -21,7 +21,7 @@
 #include <json/json.h>
 
 struct ConfigSphere {
-  float x, y, z, m, r;
+  float x, y, z, vx, vy, vz, m, r;
 };
 
 struct Config {

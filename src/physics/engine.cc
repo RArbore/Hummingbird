@@ -38,16 +38,16 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 	pos.y.push_back(body.y);
 	pos.z.push_back(body.z);
 
-	vel.x.push_back(0.0f);
-	vel.y.push_back(0.0f);
-	vel.z.push_back(0.0f);
+	vel.x.push_back(body.vx);
+	vel.y.push_back(body.vy);
+	vel.z.push_back(body.vz);
 
 	cog_x += body.x / static_cast<float>(num_bodies);
 	cog_y += body.y / static_cast<float>(num_bodies);
 	cog_z += body.z / static_cast<float>(num_bodies);
-	cog_vx += 0.0f / static_cast<float>(num_bodies);
-	cog_vy += 0.0f / static_cast<float>(num_bodies);
-	cog_vz += 0.0f / static_cast<float>(num_bodies);
+	cog_vx += body.vx / static_cast<float>(num_bodies);
+	cog_vy += body.vy / static_cast<float>(num_bodies);
+	cog_vz += body.vz / static_cast<float>(num_bodies);
 	cog_m += body.m / static_cast<float>(num_bodies);
 
 	mass.push_back(body.m);
