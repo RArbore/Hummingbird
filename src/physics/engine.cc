@@ -14,6 +14,8 @@
 
 using vector32f = std::vector<float, boost::alignment::aligned_allocator<float, 32>>;
 
+static constexpr float MAX_FORCE = 100.0f;
+
 Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 				   num_bodies(cfg.num_bodies),
 				   force{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)},
@@ -42,12 +44,12 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 	vel.y.push_back(body.vy);
 	vel.z.push_back(body.vz);
 
-	cog_x += body.x / static_cast<float>(num_bodies);
-	cog_y += body.y / static_cast<float>(num_bodies);
-	cog_z += body.z / static_cast<float>(num_bodies);
-	cog_vx += body.vx / static_cast<float>(num_bodies);
-	cog_vy += body.vy / static_cast<float>(num_bodies);
-	cog_vz += body.vz / static_cast<float>(num_bodies);
+	cog_x += body.x * body.m / static_cast<float>(num_bodies);
+	cog_y += body.y * body.m / static_cast<float>(num_bodies);
+	cog_z += body.z * body.m / static_cast<float>(num_bodies);
+	cog_vx += body.vx * body.m / static_cast<float>(num_bodies);
+	cog_vy += body.vy * body.m / static_cast<float>(num_bodies);
+	cog_vz += body.vz * body.m / static_cast<float>(num_bodies);
 	cog_m += body.m / static_cast<float>(num_bodies);
 
 	mass.push_back(body.m);
@@ -56,6 +58,12 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
       }
     }, vari);
   }
+  cog_x /= cog_m;
+  cog_y /= cog_m;
+  cog_z /= cog_m;
+  cog_vx /= cog_m;
+  cog_vy /= cog_m;
+  cog_vz /= cog_m;
 }
 
 const Engine::Vec3x<float, 32> &Engine::get_pos() const { return pos; }
@@ -81,9 +89,9 @@ void Engine::gravity_force_update(const float dt) {
     float r_z = cog_z - pos.z.at(i);
     float r2 = r_x * r_x + r_y * r_y + r_z * r_z;
     float grav = grav_constant * cog_m  / (r2 * r2);
-    force.x.at(i) = grav * r_x;
-    force.y.at(i) = grav * r_y;
-    force.z.at(i) = grav * r_z;
+    force.x.at(i) = std::min(grav * r_x, MAX_FORCE);
+    force.y.at(i) = std::min(grav * r_y, MAX_FORCE);
+    force.z.at(i) = std::min(grav * r_z, MAX_FORCE);
   }
 }
 
