@@ -59,13 +59,12 @@ private:
   Vec3x<float, 32> pos;
   Vec3x<float, 32> vel;
   Vec3x<float, 32> force;
-  float cog_x, cog_y, cog_z, cog_vx, cog_vy, cog_vz, cog_m;
   std::vector<float> mass;
   std::vector<Quaternion> ang_pos;
   std::vector<std::unique_ptr<Collider>> colliders;
 
   Transform get_transform_at(const std::size_t i);
-  void gravity_force_update(const float dt);
   void dynamics_update(const float dt);
-  void fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b, const float *const m);
+  void fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b);
+  void fused_multiply_add_with_mass(const float dt, __m256& dt_a, float *const a, const float *const b, const float *const m);
 };

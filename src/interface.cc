@@ -293,11 +293,11 @@ void Graphics::render_tick(const float dt) {
   for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
     const Collider* coll = engine.get_colliders().at(i).get();
     if (const SphereCollider* sphere_coll = dynamic_cast<const SphereCollider*>(coll)) {
-      float scale_factor = inv_golden_ratio * sphere_coll->radius;
+      const float scale_factor = inv_golden_ratio * sphere_coll->radius;
       const auto& quat = engine.get_ang_pos().at(i);
-      glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
-      glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
-      model_cache[i] = model_pos * model_rot * scale_factor;
+      const glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
+      const glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x.at(i), engine.get_pos().y.at(i), engine.get_pos().z.at(i)));
+      model_cache[i] = model_pos * model_rot * glm::mat4(scale_factor);
       normal_cache[i] = glm::inverse(model_cache[i]);
     }
   }

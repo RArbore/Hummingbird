@@ -48,10 +48,6 @@ int Config::initialize() {
                     [](const Json::Value &jv) { return jv.isNumeric(); }))
     return -1;
 
-  if (init_constant(root, "NUM_BODIES", num_bodies,
-                    [](const Json::Value &jv) { return jv.isIntegral(); }))
-    return -1;
-
   if (root["TICKS_PER_FRAME"].isIntegral()) {
     ticks_per_frame = root["TICKS_PER_FRAME"].as<std::size_t>();
   }
@@ -59,11 +55,6 @@ int Config::initialize() {
   const Json::Value &jv_bodies = root["BODIES"];
   if (!jv_bodies.isArray()) {
     std::cerr << "ERROR: Either couldn't find BODIES in input JSON, or the value of BODIES is not of the correct type." << std::endl;
-    return -1;
-  }
-
-  if (num_bodies != root["BODIES"].size()) {
-    std::cerr << "ERROR: NUM_BODIES is not the same as the amount of bodies actually present in BODIES." << std::endl;
     return -1;
   }
 
@@ -105,6 +96,7 @@ int Config::initialize() {
       return -1;
     }
   }
+  num_bodies = bodies.size();
 
   return 0;
 }
