@@ -17,6 +17,7 @@
 #include <variant>
 #include <vector>
 #include <memory>
+#include <tuple>
 
 #include <boost/align/aligned_allocator.hpp>
 
@@ -44,7 +45,7 @@ public:
 
   const Vec3x<float, 32> &get_pos() const;
   const Vec3x<float, 32> &get_vel() const;
-  const Vec3x<float, 32> &get_acc() const;
+  const Vec3x<float, 32> &get_force() const;
   const std::vector<float> &get_mass() const;
   const std::vector<Quaternion> &get_ang_pos() const;
   const std::vector<std::unique_ptr<Collider>> &get_colliders() const;
@@ -57,14 +58,14 @@ private:
   // Dynamics data
   Vec3x<float, 32> pos;
   Vec3x<float, 32> vel;
-  Vec3x<float, 32> acc;
+  Vec3x<float, 32> force;
   float cog_x, cog_y, cog_z, cog_vx, cog_vy, cog_vz, cog_m;
   std::vector<float> mass;
   std::vector<Quaternion> ang_pos;
   std::vector<std::unique_ptr<Collider>> colliders;
 
   Transform get_transform_at(const std::size_t i);
-  void gravity_acc_update(const float dt);
-  void dynamics_update(const float dt);
+  inline std::tuple<float, float, float> rk4_accel(const float x, const float y, const float z, const float m);
+  void rk4_update(const float dt);
   void fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b);
 };

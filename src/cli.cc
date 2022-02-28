@@ -52,6 +52,10 @@ int Config::initialize() {
                     [](const Json::Value &jv) { return jv.isIntegral(); }))
     return -1;
 
+  if (root["TICKS_PER_FRAME"].isIntegral()) {
+    ticks_per_frame = root["TICKS_PER_FRAME"].as<std::size_t>();
+  }
+
   const Json::Value &jv_bodies = root["BODIES"];
   if (!jv_bodies.isArray()) {
     std::cerr << "ERROR: Either couldn't find BODIES in input JSON, or the value of BODIES is not of the correct type." << std::endl;

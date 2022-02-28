@@ -11,6 +11,7 @@
     along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <iostream>
+#include <cstddef>
 #include <chrono>
 
 #include <physics/engine.h>
@@ -36,14 +37,15 @@ int main(int argc, char **argv) {
   Graphics graphics(engine);
   if (graphics.initialize()) return -1;
   
-  float dt = 0.;
+  float dt = 0., ticks_per_frame = static_cast<float>(config.ticks_per_frame);
 
   unsigned long long before = 0, after = 0;
 
   while (!graphics.should_close()) {
     before = micro_sec();
     
-    engine.update(dt);
+    for (std::size_t i = 0; i < config.ticks_per_frame; ++i)
+      engine.update(dt / ticks_per_frame);
     graphics.render_tick(dt);
 
     after = micro_sec();

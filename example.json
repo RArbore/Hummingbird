@@ -1,6 +1,7 @@
 {
     "GRAVITY" : 10000.0,
     "NUM_BODIES" : 2,
+    "TICKS_PER_FRAME" : 10,
     "BODIES" : [
 	{
 	    "TYPE" : "SPHERE",

@@ -8,6 +8,7 @@ To build the engine, you will need:
 - OpenGL
 - GLFW
 - JsonCpp
+- Boost
 
 ## Setup
 To run this project, first compile. 
