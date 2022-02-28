@@ -1,5 +1,5 @@
 {
-    "GRAVITY" : 1.0,
+    "GRAVITY" : 10000.0,
     "NUM_BODIES" : 2,
     "BODIES" : [
 	{

@@ -63,9 +63,9 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 	pos.x.push_back(x * 3.0f);
 	pos.y.push_back(y * 3.0f);
 	pos.z.push_back(z * 3.0f);
-	vel.x.push_back(x);
-	vel.y.push_back(y);
-	vel.z.push_back(z);
+	vel.x.push_back(0.0f);
+	vel.y.push_back(0.0f);
+	vel.z.push_back(0.0f);
 	acc.x.push_back(0.0f);
 	acc.y.push_back(0.0f);
 	acc.z.push_back(0.0f);
@@ -73,9 +73,9 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 	cog_x += x * 3.0f / static_cast<float>(num_bodies);
 	cog_y += y * 3.0f / static_cast<float>(num_bodies);
 	cog_z += z * 3.0f / static_cast<float>(num_bodies);
-	cog_vx += x / static_cast<float>(num_bodies);
-	cog_vy += y / static_cast<float>(num_bodies);
-	cog_vz += z / static_cast<float>(num_bodies);
+	cog_vx += 0.0f / static_cast<float>(num_bodies);
+	cog_vy += 0.0f / static_cast<float>(num_bodies);
+	cog_vz += 0.0f / static_cast<float>(num_bodies);
 	cog_m += 1.0f / static_cast<float>(num_bodies);
 
 	mass.push_back(1.0f);
@@ -95,10 +95,28 @@ const std::vector<std::unique_ptr<Collider>> &Engine::get_colliders() const { re
 std::size_t Engine::get_num_bodies() const { return num_bodies; }
 
 void Engine::update(const float dt) {
-  update_dynamics(dt);
+  gravity_acc_update(dt);
+  dynamics_update(dt);
 }
 
-void Engine::update_dynamics(const float dt) {
+void Engine::gravity_acc_update(const float dt) {
+  cog_x += cog_vx * dt;
+  cog_y += cog_vy * dt;
+  cog_z += cog_vz * dt;
+
+  for (std::size_t i = 0; i < num_bodies; ++i) {
+    float r_x = cog_x - pos.x.at(i);
+    float r_y = cog_y - pos.y.at(i);
+    float r_z = cog_z - pos.z.at(i);
+    float r2 = r_x * r_x + r_y * r_y + r_z * r_z;
+    float grav = grav_constant * cog_m * mass.at(i) / (r2 * r2);
+    acc.x.at(i) = grav * r_x;
+    acc.y.at(i) = grav * r_y;
+    acc.z.at(i) = grav * r_z;
+  }
+}
+
+void Engine::dynamics_update(const float dt) {
   __m256 dt_a = _mm256_set_ps(dt, dt, dt, dt, dt, dt, dt, dt);
 
   fused_multiply_add(dt, dt_a, vel.x.data(), acc.x.data());
@@ -110,7 +128,7 @@ void Engine::update_dynamics(const float dt) {
   fused_multiply_add(dt, dt_a, pos.z.data(), vel.z.data());
 }
 
-void Engine::fused_multiply_add(const float dt, __m256& dt_a, float *const a, float *const b) {
+void Engine::fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b) {
   std::size_t i = 0;
   if (num_bodies >= 8) {
     for (; i <= num_bodies - 8; i += 8) {

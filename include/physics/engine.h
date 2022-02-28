@@ -64,6 +64,7 @@ private:
   std::vector<std::unique_ptr<Collider>> colliders;
 
   Transform get_transform_at(const std::size_t i);
-  void update_dynamics(const float dt);
-  void fused_multiply_add(const float dt, __m256& dt_a, float *const a, float *const b);
+  void gravity_acc_update(const float dt);
+  void dynamics_update(const float dt);
+  void fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b);
 };
