@@ -29,6 +29,8 @@ int main(int argc, char **argv) {
     return -1;
   }
 
+  srand(static_cast<unsigned int>(micro_sec()));
+
   Config config(argv[1]);
   if (config.initialize()) return -1;
 

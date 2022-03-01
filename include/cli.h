@@ -26,6 +26,7 @@ struct ConfigSphere {
 
 struct Config {
   explicit Config(char *json_file_name_i) : json_file_name(json_file_name_i), grav_constant(0.0f), ticks_per_frame(1), num_bodies(0) {}
+  int process_body(const Json::Value &root);
   int initialize();
   char *json_file_name;
   float grav_constant;
