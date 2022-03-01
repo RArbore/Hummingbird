@@ -47,6 +47,9 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
       }
     }, vari);
   }
+
+  __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
+  multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
 }
 
 const Engine::Vec3x<float, 32> &Engine::get_pos() const { return pos; }
@@ -63,15 +66,26 @@ void Engine::update(const float dt) {
 
 void Engine::dynamics_update(const float dt) {
   __m256 dt_a = _mm256_set_ps(dt, dt, dt, dt, dt, dt, dt, dt);
-  for (std::size_t i = 0; i < num_bodies; ++i) force.x.at(i) = 0.0f;
-  for (std::size_t i = 0; i < num_bodies; ++i) force.y.at(i) = -grav_constant * mass.at(i);
-  for (std::size_t i = 0; i < num_bodies; ++i) force.z.at(i) = 0.0f;
   fused_multiply_add_with_mass(dt, dt_a, vel.x.data(), force.x.data(), mass.data());
   fused_multiply_add_with_mass(dt, dt_a, vel.y.data(), force.y.data(), mass.data());
   fused_multiply_add_with_mass(dt, dt_a, vel.z.data(), force.z.data(), mass.data());
   fused_multiply_add(dt, dt_a, pos.x.data(), vel.x.data());
   fused_multiply_add(dt, dt_a, pos.y.data(), vel.y.data());
   fused_multiply_add(dt, dt_a, pos.z.data(), vel.z.data());
+}
+
+void Engine::multiply_with_mass(float *const a, const float *const b, const float c, __m256& c_a) {
+  std::size_t i = 0;
+  if (num_bodies >= 8) {
+    for (; i <= num_bodies - 8; i += 8) {
+      __m256 b_a = _mm256_set_ps(b[i + 7], b[i + 6], b[i + 5], b[i + 4], b[i + 3], b[i + 2], b[i + 1], b[i]);
+      __m256 result = _mm256_mul_ps(b_a, c_a);
+      _mm256_store_ps(a + i, result);
+    }
+  }
+  for (; i < num_bodies; ++i) {
+    a[i] = b[i] * c;
+  }
 }
 
 void Engine::fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b) {

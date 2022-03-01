@@ -65,6 +65,8 @@ private:
 
   Transform get_transform_at(const std::size_t i);
   void dynamics_update(const float dt);
+
+  void multiply_with_mass(float *const a, const float *const b, const float c, __m256& c_a);
   void fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b);
   void fused_multiply_add_with_mass(const float dt, __m256& dt_a, float *const a, const float *const b, const float *const m);
 };
