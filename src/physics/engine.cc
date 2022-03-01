@@ -48,7 +48,7 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
     }, vari);
   }
 
-  __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
+  const __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
   multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
 }
 
@@ -65,7 +65,7 @@ void Engine::update(const float dt) {
 }
 
 void Engine::dynamics_update(const float dt) {
-  __m256 dt_a = _mm256_set_ps(dt, dt, dt, dt, dt, dt, dt, dt);
+  const __m256 dt_a = _mm256_set_ps(dt, dt, dt, dt, dt, dt, dt, dt);
   fused_multiply_add_with_mass(dt, dt_a, vel.x.data(), force.x.data(), mass.data());
   fused_multiply_add_with_mass(dt, dt_a, vel.y.data(), force.y.data(), mass.data());
   fused_multiply_add_with_mass(dt, dt_a, vel.z.data(), force.z.data(), mass.data());
@@ -74,12 +74,12 @@ void Engine::dynamics_update(const float dt) {
   fused_multiply_add(dt, dt_a, pos.z.data(), vel.z.data());
 }
 
-void Engine::multiply_with_mass(float *const a, const float *const b, const float c, __m256& c_a) {
+void Engine::multiply_with_mass(float *const a, const float *const b, const float c, const __m256& c_a) {
   std::size_t i = 0;
   if (num_bodies >= 8) {
     for (; i <= num_bodies - 8; i += 8) {
-      __m256 b_a = _mm256_set_ps(b[i + 7], b[i + 6], b[i + 5], b[i + 4], b[i + 3], b[i + 2], b[i + 1], b[i]);
-      __m256 result = _mm256_mul_ps(b_a, c_a);
+      const __m256 b_a = _mm256_set_ps(b[i + 7], b[i + 6], b[i + 5], b[i + 4], b[i + 3], b[i + 2], b[i + 1], b[i]);
+      const __m256 result = _mm256_mul_ps(b_a, c_a);
       _mm256_store_ps(a + i, result);
     }
   }
@@ -88,13 +88,13 @@ void Engine::multiply_with_mass(float *const a, const float *const b, const floa
   }
 }
 
-void Engine::fused_multiply_add(const float dt, __m256& dt_a, float *const a, const float *const b) {
+void Engine::fused_multiply_add(const float dt, const __m256& dt_a, float *const a, const float *const b) {
   std::size_t i = 0;
   if (num_bodies >= 8) {
     for (; i <= num_bodies - 8; i += 8) {
-      __m256 a_a = _mm256_set_ps(a[i + 7], a[i + 6], a[i + 5], a[i + 4], a[i + 3], a[i + 2], a[i + 1], a[i]);
-      __m256 b_a = _mm256_set_ps(b[i + 7], b[i + 6], b[i + 5], b[i + 4], b[i + 3], b[i + 2], b[i + 1], b[i]);
-      __m256 result = _mm256_fmadd_ps(b_a, dt_a, a_a);
+      const __m256 a_a = _mm256_set_ps(a[i + 7], a[i + 6], a[i + 5], a[i + 4], a[i + 3], a[i + 2], a[i + 1], a[i]);
+      const __m256 b_a = _mm256_set_ps(b[i + 7], b[i + 6], b[i + 5], b[i + 4], b[i + 3], b[i + 2], b[i + 1], b[i]);
+      const __m256 result = _mm256_fmadd_ps(b_a, dt_a, a_a);
       _mm256_store_ps(a + i, result);
     }
   }
@@ -103,14 +103,14 @@ void Engine::fused_multiply_add(const float dt, __m256& dt_a, float *const a, co
   }
 }
 
-void Engine::fused_multiply_add_with_mass(const float dt, __m256& dt_a, float *const a, const float *const b, const float *const m) {
+void Engine::fused_multiply_add_with_mass(const float dt, const __m256& dt_a, float *const a, const float *const b, const float *const m) {
   std::size_t i = 0;
   if (num_bodies >= 8) {
     for (; i <= num_bodies - 8; i += 8) {
-      __m256 a_a = _mm256_set_ps(a[i + 7], a[i + 6], a[i + 5], a[i + 4], a[i + 3], a[i + 2], a[i + 1], a[i]);
-      __m256 b_a = _mm256_set_ps(b[i + 7], b[i + 6], b[i + 5], b[i + 4], b[i + 3], b[i + 2], b[i + 1], b[i]);
-      __m256 m_a = _mm256_set_ps(m[i + 7], m[i + 6], m[i + 5], m[i + 4], m[i + 3], m[i + 2], m[i + 1], m[i]);
-      __m256 result = _mm256_fmadd_ps(_mm256_div_ps(b_a, m_a), dt_a, a_a);
+      const __m256 a_a = _mm256_set_ps(a[i + 7], a[i + 6], a[i + 5], a[i + 4], a[i + 3], a[i + 2], a[i + 1], a[i]);
+      const __m256 b_a = _mm256_set_ps(b[i + 7], b[i + 6], b[i + 5], b[i + 4], b[i + 3], b[i + 2], b[i + 1], b[i]);
+      const __m256 m_a = _mm256_set_ps(m[i + 7], m[i + 6], m[i + 5], m[i + 4], m[i + 3], m[i + 2], m[i + 1], m[i]);
+      const __m256 result = _mm256_fmadd_ps(_mm256_div_ps(b_a, m_a), dt_a, a_a);
       _mm256_store_ps(a + i, result);
     }
   }

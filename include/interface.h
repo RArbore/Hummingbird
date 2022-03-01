@@ -31,7 +31,7 @@ void resize_callback(GLFWwindow* window, int width, int height);
 
 class Graphics {
 public:
-  Graphics(const Engine &engine_i);
+  explicit Graphics(const Engine &engine_i);
   ~Graphics();
   int initialize();
   void render_tick(const float dt);

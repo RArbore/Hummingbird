@@ -1,6 +1,6 @@
 {
     "GRAVITY" : 1.0,
-    "TICKS_PER_FRAME" : 100,
+    "TICKS_PER_FRAME" : 1,
     "BODIES" : [
 	{
 	    "TYPE": "RANDOM",
@@ -12,7 +12,7 @@
 		"m" : 1.0,
 		"r" : 1.0
 	    },
-	    "num_bodies" : 10000,
+	    "num_bodies" : 1000,
 	    "min_x" : 0.0,
 	    "min_y" : 0.0,
 	    "min_z" : 0.0,

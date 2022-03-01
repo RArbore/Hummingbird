@@ -284,10 +284,10 @@ void Graphics::render_tick(const float dt) {
   if (resized) {
     proj = glm::perspective(glm::radians(80.0f), static_cast<float>(width) / static_cast<float>(height), 0.1f, 1000.0f);
   }
-  glm::vec3 cdir = glm::vec3(cos(ctheta) * cos(cphi), sin(cphi), sin(ctheta) * cos(cphi));
-  glm::vec3 cpos = glm::vec3(cx, cy, cz);
-  glm::mat4 view = glm::lookAt(cpos, cpos + cdir, cup);
-  glm::mat4 proj_view = proj * view;
+  const glm::vec3 cdir = glm::vec3(cos(ctheta) * cos(cphi), sin(cphi), sin(ctheta) * cos(cphi));
+  const glm::vec3 cpos = glm::vec3(cx, cy, cz);
+  const glm::mat4 view = glm::lookAt(cpos, cpos + cdir, cup);
+  const glm::mat4 proj_view = proj * view;
 
 #pragma omp parallel for
   for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
@@ -348,8 +348,8 @@ void Graphics::handle_input(float dt) {
   }
 
   if (mouse_moved && !first_mouse) {
-    float offset_x = (recent_x - last_x) * SENSITIVITY * dt;
-    float offset_y = (last_y - recent_y) * SENSITIVITY * dt;
+    const float offset_x = (recent_x - last_x) * SENSITIVITY * dt;
+    const float offset_y = (last_y - recent_y) * SENSITIVITY * dt;
     ctheta += offset_x;
     cphi += offset_y;
     if (cphi > 1.5f) cphi = 1.5f;
