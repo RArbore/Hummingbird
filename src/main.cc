@@ -18,11 +18,22 @@
 #include <interface.h>
 #include <cli.h>
 
+/*
+ * Get the current Unix time in microseconds.
+ */
 __attribute__((always_inline))
 inline unsigned long long micro_sec() {
     return static_cast<unsigned long long>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count());
 }
 
+/*
+ * Entry point for our program. Initialize a config,
+ * our engine, and a graphics context. Updates the
+ * N times per frame, according to user configuration.
+ * We use return codes for error handling - if an error
+ * happens, a message is printed to stderr at the error
+ * site, and -1 is returned up the stack.
+ */
 int main(int argc, char **argv) {
   if (argc != 2) {
     std::cerr << "Usage: " << argv[0] << " <json_file>" << std::endl;

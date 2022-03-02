@@ -20,10 +20,27 @@
 
 #include <json/json.h>
 
+/*
+ * Define types of bodies we can create in our
+ * config. These are not child classes of a base
+ * config body, since we store config bodies as
+ * std::variants - we use std::visit and duck
+ * typing to work with them.
+ */
 struct ConfigSphere {
   float x, y, z, vx, vy, vz, m, r;
 };
 
+/*
+ * Config struct representing a user config. We
+ * don't read our input file on construction as
+ * we want to return an error code if we can't
+ * parse the input configuration for any reason.
+ * Contains a couple fields for simulation
+ * constants, and a vector of variants of config
+ * bodies (representing the bodies we want to
+ * spawn in our simulation).
+ */
 struct Config {
   explicit Config(char *json_file_name_i) : json_file_name(json_file_name_i), grav_constant(0.0f), ticks_per_frame(1), num_bodies(0) {}
   int process_body(const Json::Value &root);

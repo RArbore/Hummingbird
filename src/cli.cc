@@ -12,6 +12,15 @@
 
 #include <cli.h>
 
+/*
+ * Initialize a variable with the value of an
+ * element in a JSON value. If we cannot read
+ * the desired value from the JSON (either
+ * because it is the wrong type or because it
+ * doesn't exist), we return -1. Otherwise, we
+ * deposit our read value into the lvalue we're
+ * provided a reference to.
+ */
 template <typename T>
 int init_constant(const Json::Value &root, const char *index, T &depo, bool (*criteria)(const Json::Value &)) {
   const Json::Value &indexed = root[index];
@@ -23,6 +32,17 @@ int init_constant(const Json::Value &root, const char *index, T &depo, bool (*cr
   return 0;
 }
 
+/*
+ * Adds bodies inside a JSON value into our
+ * config struct. This function is recursive
+ * (for example, a random collection of bodies
+ * must recursively find bodies inside our input 
+ * JSON). The rather dense if statements calling
+ * init_constant require an element of a certain
+ * type be in our input JSON. The if statements
+ * not ending in return -1 extract optional
+ * elements.
+ */
 int Config::process_body(const Json::Value &root) {
   std::string type;
   if (init_constant(root, "TYPE", type, [](const Json::Value &jv) { return jv.isString(); })) return -1;
@@ -86,7 +106,8 @@ int Config::initialize() {
 
   try {  
     json_file >> root;
-  } catch(const Json::RuntimeError& e) {
+  }
+  catch(const Json::RuntimeError& e) {
     std::cerr << "ERROR: Malformed JSON config file " << json_file_name << "." << std::endl; 
     return -1; 
   }
