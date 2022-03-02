@@ -59,10 +59,13 @@ int Config::process_body(const Json::Value &root) {
     bodies.push_back(ConfigSphere{x, y, z, vx, vy, vz, m, r});
   }
   else if (type == "RANDOM") {
+    std::size_t old_size = bodies.size();
+    
     process_body(root["TEMPLATE"]);
 
-    auto config_body = bodies.back();
-    bodies.pop_back();
+    decltype(bodies) config_bodies;
+    config_bodies.insert(config_bodies.end(), std::make_move_iterator(bodies.begin() + static_cast<long int>(old_size)), std::make_move_iterator(bodies.end()));
+    bodies.erase(bodies.begin() + static_cast<long int>(old_size), bodies.end());
     
     std::size_t num_bodies_gen = 0;
     float min_x = 0.0f, max_x = 0.0f, min_y = 0.0f, max_y = 0.0f, min_z = 0.0f, max_z = 0.0f;
@@ -73,19 +76,22 @@ int Config::process_body(const Json::Value &root) {
     if (init_constant(root, "max_x", max_x, [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
     if (init_constant(root, "max_y", max_y, [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
     if (init_constant(root, "max_z", max_z, [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
-    for (std::size_t i = 0; i < num_bodies_gen; ++i) {
-      float x = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-      float y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-      float z = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-      x = x * (max_x - min_x) + min_x;
-      y = y * (max_y - min_y) + min_y;
-      z = z * (max_z - min_z) + min_z;
-      std::visit([&](auto arg) {
-	arg.x += x;
-	arg.y += y;
-	arg.z += z;
-	bodies.push_back(arg);
-      }, config_body);
+
+    for (auto config_body : config_bodies) {
+      for (std::size_t i = 0; i < num_bodies_gen; ++i) {
+	float x = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	float y = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	float z = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	x = x * (max_x - min_x) + min_x;
+	y = y * (max_y - min_y) + min_y;
+	z = z * (max_z - min_z) + min_z;
+	std::visit([&](auto arg) {
+	  arg.x += x;
+	  arg.y += y;
+	  arg.z += z;
+	  bodies.push_back(arg);
+	}, config_body);
+      }
     }
   }
   else {
