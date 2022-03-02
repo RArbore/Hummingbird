@@ -17,14 +17,38 @@
 static constexpr int DEFAULT_WIDTH = 800;
 static constexpr int DEFAULT_HEIGHT = 600;
 
+/*
+ * So that we can write our shaders in normal
+ * text files without having to load them at
+ * runtime via the filesystem, we compile our
+ * shaders into object code containing just text.
+ * Then, we link those objects with our code
+ * and get the symbols representing the first
+ * characters below. We will take the address of
+ * these chars later to access the full shader
+ * texts.
+ */
 extern "C" char _binary_shaders_vertex_glsl_start;
 extern "C" char _binary_shaders_fragment_glsl_start;
 
+/*
+ * Unfortunately, we have to store global state
+ * to deal with user input, as GLFW callbacks
+ * cannot access member functions / data.
+ * Consequently, our callbacks will update this
+ * global state, which will then be seen by the
+ * graphics context in handle_input.
+ */
 static int width = DEFAULT_WIDTH, height = DEFAULT_HEIGHT;
 static bool resized = true, mouse_moved = false, first_mouse = true;
-
 static float last_x = 0.0f, last_y = 0.0f, recent_x = 0.0f, recent_y = 0.0f;
 
+/*
+ * Constant for the icosphere calculations.
+ * Stores an icosahedron for which we will
+ * subdivide and project new triangles to
+ * create a sphere mesh.
+ */
 static constexpr float golden_ratio = 1.6180339887f;
 static constexpr float inv_golden_ratio = 1.0f / golden_ratio;
 static constexpr float icosphere_base_pts[12][3] = {
@@ -63,13 +87,25 @@ static constexpr unsigned int icosphere_base_tris[20][3] = {
   {8, 6, 7},
   {9, 8, 1},
 };
+
+/*
+ * Some constants. ICOSPHERE_ITERS defines how refined
+ * our sphere mesh will be. UNIFORM_SIZE defines how
+ * many uniform model and normal matrices we can pass
+ * to our shaders at once for instanced rendering.
+ * MOVE_SPEED is how fast the camera moves in space.
+ * SENSISITIVITY is how fast the camera turns in
+ * response to mouse movement.
+ */
 static constexpr unsigned int ICOSPHERE_ITERS = 2;
-
 static constexpr unsigned int UNIFORM_SIZE = 120;
-
 static constexpr float MOVE_SPEED = 40.0f;
 static constexpr float SENSITIVITY = 1.0f;
 
+/*
+ * Graphics constructor. Dead simple since actual
+ * initialization happens in initialize.
+ */
 Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i), identity(1.0f),
 					    cup(0.0f, 1.0f, 0.0f), cx(0.0f), cy(0.0f), cz(0.0f), cphi(0.0f), ctheta(0.0f) {}
 
@@ -80,13 +116,26 @@ Graphics::~Graphics() {
   delete[] normal_cache;
 }
 
+/*
+ * Helper function for determining how large
+ * icosphere refinements are. The return type
+ * represents the number of vertices needed
+ * and the number of triangles needed, in that
+ * order.
+ */
 std::pair<unsigned int, unsigned int> Graphics::calc_icosphere_size(const unsigned int iters) const {
   if (iters == 0) return {12, 20};
   auto prev = calc_icosphere_size(iters  - 1);
   return {prev.first + prev.second * 3, prev.second * 4};
 }
 
+/*
+ * Our initialization function.
+ */
 int Graphics::initialize() {
+  /*
+   * Initialize GLFW and some GL stuff
+   */
   if (!glfwInit()) {
     std::cerr << "ERROR: Couldn't initialize GLFW. Aborting." << std::endl;
     return -1;
@@ -111,6 +160,10 @@ int Graphics::initialize() {
   glEnable(GL_CULL_FACE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+  /*
+   * Load in shaders from linked object files,
+   * and compile them.
+   */
   const char* const vertex_shader_text = &_binary_shaders_vertex_glsl_start;
   const char* const fragment_shader_text = &_binary_shaders_fragment_glsl_start;
   int shader_comp_success = 0;
@@ -141,6 +194,9 @@ int Graphics::initialize() {
     return -1;
   }
 
+  /*
+   * Link compiled shaders into a shader program.
+   */
   shader_program = glCreateProgram();
   glAttachShader(shader_program, vertex_shader);
   glAttachShader(shader_program, fragment_shader);
@@ -162,6 +218,17 @@ int Graphics::initialize() {
   model_loc = glGetUniformLocation(shader_program, "model");
   normal_loc = glGetUniformLocation(shader_program, "normal");
 
+  /*
+   * Calculate refined icosphere. For each iteration,
+   * we add points at the midpoints of each triangle
+   * in our previous icosphere. Then, we create
+   * 4 triangles where each triangle in the previous
+   * icosphere was. We also project the new vertices 
+   * onto the unit sphere. During this process, to
+   * inserting points multiple times, we keep a map
+   * of already inserted point, where each point's
+   * value is its index in the points array.
+   */
   auto icosphere_size = calc_icosphere_size(ICOSPHERE_ITERS);
   std::vector<float> icosphere_pts(&icosphere_base_pts[0][0], &icosphere_base_pts[0][0] + 12 * 3);
   std::vector<unsigned int> icosphere_tris(&icosphere_base_tris[0][0], &icosphere_base_tris[0][0] + 20 * 3);
@@ -242,6 +309,26 @@ int Graphics::initialize() {
     icosphere_tris = std::move(new_tris);
   }
   
+  /*
+   * On an icosphere, each point is its own normal.
+   */
+  std::vector<float> icosphere_pts_with_norms;
+  icosphere_pts_with_norms.reserve(icosphere_pts.size());
+  for (std::size_t i = 0; i < icosphere_pts.size(); i += 3) {
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
+  }
+
+  /*
+   * Allocate our caches and create our OpenGL buffers
+   * and arrays. These hold information about the various
+   * meshes we use in our simulation. Each VAO / VBO / 
+   * optionally EBO combo represents a single mesh.
+   */
   model_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
   normal_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
 
@@ -259,23 +346,23 @@ int Graphics::initialize() {
   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
   glEnableVertexAttribArray(1);
 
-  std::vector<float> icosphere_pts_with_norms;
-  icosphere_pts_with_norms.reserve(icosphere_pts.size());
-  for (std::size_t i = 0; i < icosphere_pts.size(); i += 3) {
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
-  }
-
   glBufferData(GL_ARRAY_BUFFER, static_cast<long int>(icosphere_pts_with_norms.size() * sizeof(float)), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<long int>(icosphere_tris.size() * sizeof(unsigned int)), icosphere_tris.data(), GL_STATIC_DRAW);
 
   return 0;
 }
 
+/*
+ * Render tick function that occurs every frame. First,
+ * we handle user input. Then, we clear the screen buffer.
+ * Next, we calculate various matrices / vectors related
+ * to camera projection. Then, we, in parallel, calculate
+ * the model and normal matrices for every body in our
+ * scene. These matrices modify the position and normals
+ * of our bodies, respectively. Next, we perform instanced
+ * rendering of our bodies to minimize OpenGL API calls.
+ * Finally, we swap buffers.
+ */
 void Graphics::render_tick(const float dt) {
   handle_input(dt);
 
@@ -322,6 +409,12 @@ void Graphics::render_tick(const float dt) {
   resized = false;
 }
 
+/*
+ * Handle user input. For keyboard input, we move
+ * the camera. For mouse input, we turn the camera.
+ * This is where we check our global state 
+ * periodically in order to respond to mouse input.
+ */
 void Graphics::handle_input(float dt) {
   glfwPollEvents();
   if (glfwGetKey(window, GLFW_KEY_W)) {

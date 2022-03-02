@@ -101,6 +101,15 @@ int Config::process_body(const Json::Value &root) {
   return 0;
 }
 
+/*
+ * Initializes a config struct. This is separate
+ * from the config constructor as we want to
+ * retrieve a return code from this initialization.
+ * We first read in our input file into a root JSON
+ * value, then we extract some global constants,
+ * and finally we process all the bodies in the
+ * config.
+ */
 int Config::initialize() {
   std::ifstream json_file(json_file_name);
   if (!json_file.is_open()) {
