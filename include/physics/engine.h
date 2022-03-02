@@ -25,9 +25,16 @@
 #include <physics/collider.h>
 #include <cli.h>
 
-/**
- * @brief Context for physics calculations
- * Keeps track of physics objects positions / dynamics, checks for and responds to collisions
+/*
+ * Engine represents the physics world we are
+ * simulating. We are using data oriented design,
+ * so each attribute common amongst bodies
+ * (position, velocity, mass, etc) is stored as
+ * its own vector - this way, we can very
+ * efficiently update each attribute using vector
+ * instructions. We provided getters for these
+ * vectors so that the graphics context can access
+ * bodies.
  */
 
 class Engine {
@@ -51,11 +58,16 @@ public:
   const std::vector<std::unique_ptr<Collider>> &get_colliders() const;
   std::size_t get_num_bodies() const;
 private:
-  // Constants / configuration
+  /*
+   * Constants / configuration.
+   */
   float grav_constant;
   std::size_t num_bodies;
 
-  // Dynamics data
+  /*
+   * Dynamics data, organized using data
+   * oriented design.
+   */
   Vec3x<float, 32> pos;
   Vec3x<float, 32> vel;
   Vec3x<float, 32> force;
@@ -66,6 +78,9 @@ private:
   Transform get_transform_at(const std::size_t i);
   void dynamics_update(const float dt);
 
+  /*
+   * Utility functions for performing vector operations.
+   */
   void multiply_with_mass(float *const a, const float *const b, const float c, const __m256& c_a);
   void fused_multiply_add(const float dt, const __m256& dt_a, float *const a, const float *const b);
   void fused_multiply_add_with_mass(const float dt, const __m256& dt_a, float *const a, const float *const b, const float *const m);

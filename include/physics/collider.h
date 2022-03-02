@@ -14,6 +14,12 @@
 
 #include <math.h>
 
+/*
+ * Since we're using data oriented design, each
+ * collider doesn't store its own transform. When
+ * checking collisions, we get our transforms passed
+ * in as well.
+ */
 struct Transform {
   float x, y, z;
 };
@@ -24,6 +30,11 @@ float operator*(const Transform& a, const Transform& b);
 Transform operator*(const Transform& a, float b);
 Transform operator/(const Transform& a, float b);
 
+/*
+ * A response to a collision query -  tells us more
+ * than just whether a collision occurred so that we
+ * can properly respond to the collision.
+ */
 struct CollisionResponse {
   Transform AinB;
   Transform BinA;
@@ -34,6 +45,15 @@ struct CollisionResponse {
 
 struct SphereCollider;
 
+/*
+ * Every collider inherits virtual methods for
+ * performing collision checks with every other
+ * collider. We use double callback to deduce 
+ * the type of both colliders (so that we can
+ * make a concrete collision check). Colliders
+ * store attributes unique to the type of body.
+ * For example, sphere colliders store a radius.
+ */
 struct Collider {
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const = 0;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const = 0;
