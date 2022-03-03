@@ -25,7 +25,7 @@ TEST_CASE("Config constructor general case", "[cli]") {
 }
 
 TEST_CASE("Config constructor empty file name", "[cli]") {
-  char file_name[]{};
+  char file_name[]{""};
   Config cfg(file_name);
   REQUIRE(strncmp(file_name, "", 2) == 0);
 }
@@ -59,11 +59,4 @@ TEST_CASE("Initialize without fields", "[cli]") {
   Config cfg(file_name);
 
   REQUIRE(cfg.initialize() == -1);
-}
-
-TEST_CASE("Initialize NUM_BODIES != size of BODIES", "[cli]") {
-  char file_name[]{"tests/cli_jsons/diffbodies.json"};
-  Config cfg(file_name);
-
-  REQUIRE(cfg.initialize() == -1); 
 }
