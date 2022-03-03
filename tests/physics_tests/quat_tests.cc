@@ -15,6 +15,14 @@
 
 #include "../../include/physics/quaternion.h"
 
+void smallDiff(float f1, float f2) {
+  float k = f1 - f2;
+  if ((-0.01 < k) && (k < 0.01)) {
+    return true;
+  }
+  returm false;
+}
+
 TEST_CASE("Quaternion Constructor with values 1", "[quaternion]") {
   Quaternion q = {3.0f, 1.0f, 1.0f, 1.0f}; 
   REQUIRE(q.w == 3.0f); 
@@ -52,10 +60,10 @@ TEST_CASE("Normalize unit quaternion", "[quaternion]") {
 TEST_CASE("Normalize typical quaternion 1", "[quaternion]") {
   Quaternion q = {1.0f, 1.0f, 1.0f, 1.0f}; 
   q.normalize();  
-  REQUIRE(q.w == .5f); 
-  REQUIRE(q.x == .5f); 
-  REQUIRE(q.y == .5f); 
-  REQUIRE(q.z == .5f); 
+  REQUIRE(smallDiff(q.w,.5f)); 
+  REQUIRE(smallDiff(q.x,.5f)); 
+  REQUIRE(smallDiff(q.y,.5f)); 
+  REQUIRE(smallDiff(q.z,.5f)); 
 }
 
 
@@ -64,10 +72,10 @@ TEST_CASE("Normalize typical quaternion 2", "[quaternion]") {
   Quaternion q = {3.0f, 4.0f, 12.0f, 0.0f}; 
   Quaternion q2 = q;
   q.normalize();  
-  REQUIRE(q.w == q2.w/13); 
-  REQUIRE(q.x == q2.x/13); 
-  REQUIRE(q.y == q2.y/13); 
-  REQUIRE(q.z == q2.z/13); 
+  REQUIRE(smallDiff(q.w,q2.w/13)); 
+  REQUIRE(smallDiff(q.x,q2.x/13)); 
+  REQUIRE(smallDiff(q.y,q2.y/13)); 
+  REQUIRE(smallDiff(q.z,q2.z/13)); 
 }
 
 
@@ -76,8 +84,8 @@ TEST_CASE("Normalize typical quaternion 3", "[quaternion]") {
   Quaternion q2 = q; 
   q2.normalize(); 
   float norm = 106.0f; 
-  REQUIRE(q2.w == q.w/norm); 
-  REQUIRE(q2.x == q.x/norm); 
-  REQUIRE(q2.y == q.y/norm); 
-  REQUIRE(q2.z == q.z/norm); 
+  REQUIRE(smallDiff(q2.w, q.w/norm)); 
+  REQUIRE(smallDiff(q2.x, q.x/norm)); 
+  REQUIRE(smallDiff(q2.y, q.y/norm)); 
+  REQUIRE(smallDiff(q2.z, q.z/norm)); 
 }
