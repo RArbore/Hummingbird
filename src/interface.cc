@@ -280,15 +280,27 @@ int Graphics::initialize() {
  * value is its index in the points array.
  */
 std::pair<std::vector<float>, std::vector<unsigned int>> Graphics::create_icosphere_mesh() {
+  /*
+   * Initialize our vectors with the 0 iteration
+   * icosphere (a.k.a. an icosahedron).
+   */
   auto icosphere_size = calc_icosphere_size(ICOSPHERE_ITERS);
   std::vector<float> icosphere_pts(&icosphere_base_pts[0][0], &icosphere_base_pts[0][0] + 12 * 3);
   std::vector<unsigned int> icosphere_tris(&icosphere_base_tris[0][0], &icosphere_base_tris[0][0] + 20 * 3);
   num_pts = icosphere_size.first;
   num_tris = icosphere_size.second;
+  /*
+   * Normalize to radius 1.
+   */
   for (auto iter = icosphere_pts.begin(); iter != icosphere_pts.end(); ++iter) {
     *iter = *iter / sqrt(golden_ratio * golden_ratio + 1);
   }
 
+  /*
+   * Avoid inserting points twice - also,
+   * we need to lookup point positions to
+   * create triangles for old vertices.
+   */
   std::map<std::tuple<float, float, float>, unsigned int> already_inserted_pts;
   for (unsigned int i = 0; i < 12; ++i) {
     already_inserted_pts.insert({{icosphere_base_pts[i][0], icosphere_base_pts[i][1], icosphere_base_pts[i][2]}, i * 3});
@@ -299,6 +311,9 @@ std::pair<std::vector<float>, std::vector<unsigned int>> Graphics::create_icosph
 
     unsigned int old_pts_end = static_cast<unsigned int>(icosphere_pts.size() / 3);
     for (unsigned int t = 0; t < icosphere_tris.size(); t += 3) {
+      /*
+       * Calculate new points.
+       */
       float x1 = (icosphere_pts.at(3 * icosphere_tris.at(t)) + icosphere_pts.at(3 * icosphere_tris.at(t + 1))) / 2.0f;
       float x2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1)) + icosphere_pts.at(3 * icosphere_tris.at(t + 2))) / 2.0f;
       float x3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2)) + icosphere_pts.at(3 * icosphere_tris.at(t))) / 2.0f;
@@ -321,6 +336,9 @@ std::pair<std::vector<float>, std::vector<unsigned int>> Graphics::create_icosph
       y3 *= m3;
       z3 *= m3;
 
+      /*
+       * Insert points only if not already in map.
+       */
       if (!already_inserted_pts.count({x1, y1, z1})) {
 	icosphere_pts.push_back(x1);
 	icosphere_pts.push_back(y1);
@@ -343,6 +361,9 @@ std::pair<std::vector<float>, std::vector<unsigned int>> Graphics::create_icosph
 	++old_pts_end;
       }
 
+      /*
+       * Add triangles.
+       */
       new_tris.push_back(icosphere_tris.at(t));
       new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
       new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
@@ -359,6 +380,7 @@ std::pair<std::vector<float>, std::vector<unsigned int>> Graphics::create_icosph
     
     icosphere_tris = std::move(new_tris);
   }
+  return std::make_pair(icosphere_pts, icosphere_tris);
 }
 
 /*
