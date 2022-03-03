@@ -65,6 +65,7 @@ private:
    */
   unsigned int num_pts, num_tris;
   std::pair<unsigned int, unsigned int> calc_icosphere_size(const unsigned int iters) const;
+  std::pair<std::vector<float>, std::vector<unsigned int>> create_icosphere_mesh();
 
   /*
    * Members representing parts of our OpenGL pipeline.

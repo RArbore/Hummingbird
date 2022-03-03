@@ -217,18 +217,69 @@ int Graphics::initialize() {
   proj_view_loc = glGetUniformLocation(shader_program, "proj_view");
   model_loc = glGetUniformLocation(shader_program, "model");
   normal_loc = glGetUniformLocation(shader_program, "normal");
+  
+  /*
+   * Calculate the mesh for the icosphere.
+   */
+  auto icosphere = create_icosphere_mesh();
+  auto& icosphere_pts = icosphere.first;
+  auto& icosphere_tris = icosphere.second;
 
   /*
-   * Calculate refined icosphere. For each iteration,
-   * we add points at the midpoints of each triangle
-   * in our previous icosphere. Then, we create
-   * 4 triangles where each triangle in the previous
-   * icosphere was. We also project the new vertices 
-   * onto the unit sphere. During this process, to
-   * inserting points multiple times, we keep a map
-   * of already inserted point, where each point's
-   * value is its index in the points array.
+   * On an icosphere, each point is its own normal.
    */
+  std::vector<float> icosphere_pts_with_norms;
+  icosphere_pts_with_norms.reserve(icosphere_pts.size());
+  for (std::size_t i = 0; i < icosphere_pts.size(); i += 3) {
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
+  }
+
+  /*
+   * Allocate our caches and create our OpenGL buffers
+   * and arrays. These hold information about the various
+   * meshes we use in our simulation. Each VAO / VBO / 
+   * optionally EBO combo represents a single mesh.
+   */
+  model_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
+  normal_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
+
+  glGenVertexArrays(1, &VAO);
+  glBindVertexArray(VAO);
+
+  glGenBuffers(1, &VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+
+  glGenBuffers(1, &EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
+  glBufferData(GL_ARRAY_BUFFER, static_cast<long int>(icosphere_pts_with_norms.size() * sizeof(float)), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<long int>(icosphere_tris.size() * sizeof(unsigned int)), icosphere_tris.data(), GL_STATIC_DRAW);
+
+  return 0;
+}
+
+/*
+ * Calculate refined icosphere. For each iteration,
+ * we add points at the midpoints of each triangle
+ * in our previous icosphere. Then, we create
+ * 4 triangles where each triangle in the previous
+ * icosphere was. We also project the new vertices 
+ * onto the unit sphere. During this process, to
+ * inserting points multiple times, we keep a map
+ * of already inserted point, where each point's
+ * value is its index in the points array.
+ */
+std::pair<std::vector<float>, std::vector<unsigned int>> Graphics::create_icosphere_mesh() {
   auto icosphere_size = calc_icosphere_size(ICOSPHERE_ITERS);
   std::vector<float> icosphere_pts(&icosphere_base_pts[0][0], &icosphere_base_pts[0][0] + 12 * 3);
   std::vector<unsigned int> icosphere_tris(&icosphere_base_tris[0][0], &icosphere_base_tris[0][0] + 20 * 3);
@@ -308,48 +359,6 @@ int Graphics::initialize() {
     
     icosphere_tris = std::move(new_tris);
   }
-  
-  /*
-   * On an icosphere, each point is its own normal.
-   */
-  std::vector<float> icosphere_pts_with_norms;
-  icosphere_pts_with_norms.reserve(icosphere_pts.size());
-  for (std::size_t i = 0; i < icosphere_pts.size(); i += 3) {
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
-  }
-
-  /*
-   * Allocate our caches and create our OpenGL buffers
-   * and arrays. These hold information about the various
-   * meshes we use in our simulation. Each VAO / VBO / 
-   * optionally EBO combo represents a single mesh.
-   */
-  model_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
-  normal_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
-
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-  glGenBuffers(1, &EBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
-  glBufferData(GL_ARRAY_BUFFER, static_cast<long int>(icosphere_pts_with_norms.size() * sizeof(float)), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<long int>(icosphere_tris.size() * sizeof(unsigned int)), icosphere_tris.data(), GL_STATIC_DRAW);
-
-  return 0;
 }
 
 /*
