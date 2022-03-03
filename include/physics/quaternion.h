@@ -12,7 +12,7 @@
 
 #pragma once
 
-#include <immintrin.h>
+#include <math.h>
 
 /**
  * @brief Represents rotations

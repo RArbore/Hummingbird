@@ -44,10 +44,10 @@ TEST_CASE("Normalize unit quaternion", "[quaternion]") {
 TEST_CASE("Normalize typical quaternion 1", "[quaternion]") {
   Quaternion q = {1.0f, 1.0f, 1.0f, 1.0f}; 
   q.normalize();  
-  REQUIRE(q.w == .25f); 
-  REQUIRE(q.x == .25f); 
-  REQUIRE(q.y == .25f); 
-  REQUIRE(q.z == .25f); 
+  REQUIRE(q.w == .5f); 
+  REQUIRE(q.x == .5f); 
+  REQUIRE(q.y == .5f); 
+  REQUIRE(q.z == .5f); 
 }
 
 TEST_CASE("Normalize typical quaternion 2", "[quaternion]") {
