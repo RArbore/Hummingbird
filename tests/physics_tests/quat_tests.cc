@@ -41,11 +41,22 @@ TEST_CASE("Normalize unit quaternion", "[quaternion]") {
 }
 
 // TODO getting infinite length on this case
-TEST_CASE("Normalize typical quaternion", "[quaternion]") {
-  Quaternion q = {1.0f, 2.0f, 2.0f, 3.0f}; 
+TEST_CASE("Normalize typical quaternion 1", "[quaternion]") {
+  Quaternion q = {1.0f, 1.0f, 1.0f, 1.0f}; 
   q.normalize();  
   REQUIRE(q.w == .25f); 
-  REQUIRE(q.x == .5f); 
-  REQUIRE(q.y == .5f); 
-  REQUIRE(q.z == .75f); 
+  REQUIRE(q.x == .25f); 
+  REQUIRE(q.y == .25f); 
+  REQUIRE(q.z == .25f); 
+}
+
+TEST_CASE("Normalize typical quaternion 2", "[quaternion]") {
+  Quaternion q = {5.0f, 7.0f, 31.0f, 101.0f}; 
+  Quaternion q2 = q; 
+  q2.normalize(); 
+  float norm = 106.0f; 
+  REQUIRE(q2.w == q.w/norm); 
+  REQUIRE(q2.x == q.x/norm); 
+  REQUIRE(q2.y == q.y/norm); 
+  REQUIRE(q2.z == q.z/norm); 
 }
