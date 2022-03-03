@@ -14,10 +14,16 @@
 
 SphereCollider::SphereCollider(float radius_i): radius(radius_i) {}
 
+/*
+ * Double callback functions to deduce other collider type.
+ */
 CollisionResponse SphereCollider::checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const {
   return other.checkCollision(*this, otherPos, myPos);
 }
 
+/*
+ * Check collision between 2 spheres.
+ */
 CollisionResponse SphereCollider::checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const {
   Transform BmA = otherPos - myPos;
   CollisionResponse result;
