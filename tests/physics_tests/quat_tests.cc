@@ -15,7 +15,7 @@
 
 #include "../../include/physics/quaternion.h"
 
-TEST_CASE("Quartenion Constructor with values", "[quartenion]") {
+TEST_CASE("Quaternion Constructor with values", "[quaternion]") {
   Quaternion q = {3.0f, 1.0f, 1.0f, 1.0f}; 
   REQUIRE(q.w == 3.0f); 
   REQUIRE(q.x == 1.0f); 
@@ -23,7 +23,7 @@ TEST_CASE("Quartenion Constructor with values", "[quartenion]") {
   REQUIRE(q.z == 1.0f); 
 }
 
-TEST_CASE("Quartenion Empty Constructor", "[quartenion]") {
+TEST_CASE("Quaternion Empty Constructor", "[quaternion]") {
   Quaternion q; 
   REQUIRE(q.w == 0.0f); 
   REQUIRE(q.x == 0.0f); 
@@ -31,7 +31,7 @@ TEST_CASE("Quartenion Empty Constructor", "[quartenion]") {
   REQUIRE(q.z == 0.0f); 
 }
 
-TEST_CASE("Normalize unit quartenion", "[quartenion]") {
+TEST_CASE("Normalize unit quaternion", "[quaternion]") {
   Quaternion q = {0.0f, 0.0f, 0.0f, 1.0f}; 
   q.normalize(); 
   REQUIRE(q.w == q.w); 
@@ -41,7 +41,7 @@ TEST_CASE("Normalize unit quartenion", "[quartenion]") {
 }
 
 // TODO getting infinite length on this case
-TEST_CASE("Normalize typical quartenion", "[quartenion]") {
+TEST_CASE("Normalize typical quaternion", "[quaternion]") {
   Quaternion q = {1.0f, 2.0f, 2.0f, 3.0f}; 
   q.normalize();  
   REQUIRE(q.w == .25f); 
