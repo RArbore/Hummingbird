@@ -16,7 +16,7 @@
 CXX=g++
 LD=g++
 
-W_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused -Wconversion
+W_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default -Wundef -Werror -Wno-unused -Wconversion -Wno-strict-overflow
 
 CXX_FLAGS=-std=c++17 -Ofast -fopenmp -mavx -march=native -Iinclude $(W_FLAGS)
 
@@ -36,14 +36,23 @@ build/collider.o: src/physics/collider.cc include/physics/collider.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/quaternion.o: src/physics/quaternion.cc include/physics/quaternion.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
+build/linear_allocator.o: include/linear_allocator.h
+	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/vertex.o: shaders/vertex.glsl
 	objcopy --input binary --output elf64-x86-64 $< $@
 build/fragment.o: shaders/fragment.glsl
 	objcopy --input binary --output elf64-x86-64 $< $@
 
-test: build/cli.o build/tests.o
+test: build/cli.o build/tests.o 
 	$(LD) $(L_FLAGS) -o $@ $^
+
+test_allocator: build/allocator_tests.o
+	$(LD) $(L_FLAGS) -o $@ $^
+	
 build/tests.o: tests/cli_tests.cc
+	$(CXX) $(CXX_FLAGS) -c $^ -o $@
+
+build/allocator_tests.o: tests/linear_allocator_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
 exe: hummingbird
