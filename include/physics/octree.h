@@ -18,7 +18,8 @@
 
 // this maxDepth subject to change, 
 // specifically potentially as a function of engine.get_num_bodies(); 
-static constexpr unsigned int c_max_depth = 5; 
+static constexpr unsigned int C_MAX_DEPTH = 5; 
+static constexpr unsigned int C_NODE_SIZE = 8;
 
 /**
  * @brief Class to efficiently find potential collisions
@@ -30,9 +31,10 @@ public:
 
 private:
   struct OctreeNode {
-    unsigned int children[8];
-    unsigned int index_body;
-    bool is_leaf; 
+    unsigned int bodies[C_NODE_SIZE]; 
+    unsigned int stored;
+    unsigned int first_child;
+    bool is_leaf();
   }; 
 
   std::vector<OctreeNode> nodes;
