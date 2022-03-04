@@ -12,11 +12,23 @@
 
 #include <physics/engine.h>
 
+/*
+ * For vector instructions, we need to allocate 
+ * our memory aligned on 32-byte boundaries.
+ */
 using vector32f = std::vector<float, boost::alignment::aligned_allocator<float, 32>>;
 
+/*
+ * Construct engine based on configuration,
+ * which provides some constants and bodies.
+ */
 Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 				   num_bodies(cfg.num_bodies),
 				   force{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)} {
+  /*
+   * Reserve space so  that we don't waste
+   * heap allocations.
+   */
   pos.x.reserve(num_bodies);
   pos.y.reserve(num_bodies);
   pos.z.reserve(num_bodies);
@@ -29,6 +41,10 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
   ang_pos.reserve(num_bodies);
   colliders.reserve(num_bodies);
 
+  /*
+   * Config bodies are stored as variants,
+   * so we use std::visit to deduce types.
+   */
   for (auto vari : cfg.bodies) {
     std::visit([&](auto&& body) {
       using T = std::decay_t<decltype(body)>;
@@ -48,10 +64,17 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
     }, vari);
   }
 
+  /*
+   * Initialize y force vector w/ gravitational 
+   * constant.
+   */
   const __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
   multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
 }
 
+/*
+ * Getters for body data (used by graphics).
+ */
 const Engine::Vec3x<float, 32> &Engine::get_pos() const { return pos; }
 const Engine::Vec3x<float, 32> &Engine::get_vel() const { return vel; }
 const Engine::Vec3x<float, 32> &Engine::get_force() const { return force; }
@@ -65,15 +88,32 @@ void Engine::update(const float dt) {
 }
 
 void Engine::dynamics_update(const float dt) {
+  /*
+   * Initialize vector register filled with
+   * dt, so that we can avoid reallocating
+   * it for each operation.
+   */
   const __m256 dt_a = _mm256_set_ps(dt, dt, dt, dt, dt, dt, dt, dt);
+
+  /*
+   * Update velocities from forces.
+   */
   fused_multiply_add_with_mass(dt, dt_a, vel.x.data(), force.x.data(), mass.data());
   fused_multiply_add_with_mass(dt, dt_a, vel.y.data(), force.y.data(), mass.data());
   fused_multiply_add_with_mass(dt, dt_a, vel.z.data(), force.z.data(), mass.data());
+
+  /*
+   * Update positions from velocities.
+   */
   fused_multiply_add(dt, dt_a, pos.x.data(), vel.x.data());
   fused_multiply_add(dt, dt_a, pos.y.data(), vel.y.data());
   fused_multiply_add(dt, dt_a, pos.z.data(), vel.z.data());
 }
 
+/*
+ * Helper to perform a[i] = b[i] * c using
+ * AVX instructions.
+ */
 void Engine::multiply_with_mass(float *const a, const float *const b, const float c, const __m256& c_a) {
   std::size_t i = 0;
   if (num_bodies >= 8) {
@@ -88,6 +128,10 @@ void Engine::multiply_with_mass(float *const a, const float *const b, const floa
   }
 }
 
+/*
+ * Helper to perform a[i] += b[i] * dt
+ * using AVX instructions.
+ */
 void Engine::fused_multiply_add(const float dt, const __m256& dt_a, float *const a, const float *const b) {
   std::size_t i = 0;
   if (num_bodies >= 8) {
@@ -103,6 +147,10 @@ void Engine::fused_multiply_add(const float dt, const __m256& dt_a, float *const
   }
 }
 
+/*
+ * Helper to perform a[i] += b[i] * dt / m[i]
+ * using AVX instructions.
+ */
 void Engine::fused_multiply_add_with_mass(const float dt, const __m256& dt_a, float *const a, const float *const b, const float *const m) {
   std::size_t i = 0;
   if (num_bodies >= 8) {

@@ -217,98 +217,14 @@ int Graphics::initialize() {
   proj_view_loc = glGetUniformLocation(shader_program, "proj_view");
   model_loc = glGetUniformLocation(shader_program, "model");
   normal_loc = glGetUniformLocation(shader_program, "normal");
-
-  /*
-   * Calculate refined icosphere. For each iteration,
-   * we add points at the midpoints of each triangle
-   * in our previous icosphere. Then, we create
-   * 4 triangles where each triangle in the previous
-   * icosphere was. We also project the new vertices 
-   * onto the unit sphere. During this process, to
-   * inserting points multiple times, we keep a map
-   * of already inserted point, where each point's
-   * value is its index in the points array.
-   */
-  auto icosphere_size = calc_icosphere_size(ICOSPHERE_ITERS);
-  std::vector<float> icosphere_pts(&icosphere_base_pts[0][0], &icosphere_base_pts[0][0] + 12 * 3);
-  std::vector<unsigned int> icosphere_tris(&icosphere_base_tris[0][0], &icosphere_base_tris[0][0] + 20 * 3);
-  num_pts = icosphere_size.first;
-  num_tris = icosphere_size.second;
-  for (auto iter = icosphere_pts.begin(); iter != icosphere_pts.end(); ++iter) {
-    *iter = *iter / sqrt(golden_ratio * golden_ratio + 1);
-  }
-
-  std::map<std::tuple<float, float, float>, unsigned int> already_inserted_pts;
-  for (unsigned int i = 0; i < 12; ++i) {
-    already_inserted_pts.insert({{icosphere_base_pts[i][0], icosphere_base_pts[i][1], icosphere_base_pts[i][2]}, i * 3});
-  }
-  for (unsigned int i = 0; i < ICOSPHERE_ITERS; ++i) {
-    std::vector<unsigned int> new_tris;
-    new_tris.reserve(num_tris * 3);
-
-    unsigned int old_pts_end = static_cast<unsigned int>(icosphere_pts.size() / 3);
-    for (unsigned int t = 0; t < icosphere_tris.size(); t += 3) {
-      float x1 = (icosphere_pts.at(3 * icosphere_tris.at(t)) + icosphere_pts.at(3 * icosphere_tris.at(t + 1))) / 2.0f;
-      float x2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1)) + icosphere_pts.at(3 * icosphere_tris.at(t + 2))) / 2.0f;
-      float x3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2)) + icosphere_pts.at(3 * icosphere_tris.at(t))) / 2.0f;
-      float y1 = (icosphere_pts.at(3 * icosphere_tris.at(t) + 1) + icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 1)) / 2.0f;
-      float y2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 1) + icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 1)) / 2.0f;
-      float y3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 1) + icosphere_pts.at(3 * icosphere_tris.at(t) + 1)) / 2.0f;
-      float z1 = (icosphere_pts.at(3 * icosphere_tris.at(t) + 2) + icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 2)) / 2.0f;
-      float z2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 2) + icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 2)) / 2.0f;
-      float z3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 2) + icosphere_pts.at(3 * icosphere_tris.at(t) + 2)) / 2.0f;
-      float m1 = 1.0f / sqrt(x1 * x1 + y1 * y1 + z1 * z1);
-      float m2 = 1.0f / sqrt(x2 * x2 + y2 * y2 + z2 * z2);
-      float m3 = 1.0f / sqrt(x3 * x3 + y3 * y3 + z3 * z3);
-      x1 *= m1;
-      y1 *= m1;
-      z1 *= m1;
-      x2 *= m2;
-      y2 *= m2;
-      z2 *= m2;
-      x3 *= m3;
-      y3 *= m3;
-      z3 *= m3;
-
-      if (!already_inserted_pts.count({x1, y1, z1})) {
-	icosphere_pts.push_back(x1);
-	icosphere_pts.push_back(y1);
-	icosphere_pts.push_back(z1);
-	already_inserted_pts.insert({{x1, y1, z1}, old_pts_end});
-	++old_pts_end;
-      }
-      if (!already_inserted_pts.count({x2, y2, z2})) {
-	icosphere_pts.push_back(x2);
-	icosphere_pts.push_back(y2);
-	icosphere_pts.push_back(z2);
-	already_inserted_pts.insert({{x2, y2, z2}, old_pts_end});
-	++old_pts_end;
-      }
-      if (!already_inserted_pts.count({x3, y3, z3})) {
-	icosphere_pts.push_back(x3);
-	icosphere_pts.push_back(y3);
-	icosphere_pts.push_back(z3);
-	already_inserted_pts.insert({{x3, y3, z3}, old_pts_end});
-	++old_pts_end;
-      }
-
-      new_tris.push_back(icosphere_tris.at(t));
-      new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
-      new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
-      new_tris.push_back(icosphere_tris.at(t + 1));
-      new_tris.push_back(already_inserted_pts.at({x2, y2, z2}));
-      new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
-      new_tris.push_back(icosphere_tris.at(t + 2));
-      new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
-      new_tris.push_back(already_inserted_pts.at({x2, y2, z2}));
-      new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
-      new_tris.push_back(already_inserted_pts.at({x2, y2, z2}));
-      new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
-    }
-    
-    icosphere_tris = std::move(new_tris);
-  }
   
+  /*
+   * Calculate the mesh for the icosphere.
+   */
+  auto icosphere = create_icosphere_mesh();
+  auto& icosphere_pts = icosphere.first;
+  auto& icosphere_tris = icosphere.second;
+
   /*
    * On an icosphere, each point is its own normal.
    */
@@ -350,6 +266,121 @@ int Graphics::initialize() {
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<long int>(icosphere_tris.size() * sizeof(unsigned int)), icosphere_tris.data(), GL_STATIC_DRAW);
 
   return 0;
+}
+
+/*
+ * Calculate refined icosphere. For each iteration,
+ * we add points at the midpoints of each triangle
+ * in our previous icosphere. Then, we create
+ * 4 triangles where each triangle in the previous
+ * icosphere was. We also project the new vertices 
+ * onto the unit sphere. During this process, to
+ * inserting points multiple times, we keep a map
+ * of already inserted point, where each point's
+ * value is its index in the points array.
+ */
+std::pair<std::vector<float>, std::vector<unsigned int>> Graphics::create_icosphere_mesh() {
+  /*
+   * Initialize our vectors with the 0 iteration
+   * icosphere (a.k.a. an icosahedron).
+   */
+  auto icosphere_size = calc_icosphere_size(ICOSPHERE_ITERS);
+  std::vector<float> icosphere_pts(&icosphere_base_pts[0][0], &icosphere_base_pts[0][0] + 12 * 3);
+  std::vector<unsigned int> icosphere_tris(&icosphere_base_tris[0][0], &icosphere_base_tris[0][0] + 20 * 3);
+  num_pts = icosphere_size.first;
+  num_tris = icosphere_size.second;
+  /*
+   * Normalize to radius 1.
+   */
+  for (auto iter = icosphere_pts.begin(); iter != icosphere_pts.end(); ++iter) {
+    *iter = *iter / sqrt(golden_ratio * golden_ratio + 1);
+  }
+
+  /*
+   * Avoid inserting points twice - also,
+   * we need to lookup point positions to
+   * create triangles for old vertices.
+   */
+  std::map<std::tuple<float, float, float>, unsigned int> already_inserted_pts;
+  for (unsigned int i = 0; i < 12; ++i) {
+    already_inserted_pts.insert({{icosphere_base_pts[i][0], icosphere_base_pts[i][1], icosphere_base_pts[i][2]}, i * 3});
+  }
+  for (unsigned int i = 0; i < ICOSPHERE_ITERS; ++i) {
+    std::vector<unsigned int> new_tris;
+    new_tris.reserve(num_tris * 3);
+
+    unsigned int old_pts_end = static_cast<unsigned int>(icosphere_pts.size() / 3);
+    for (unsigned int t = 0; t < icosphere_tris.size(); t += 3) {
+      /*
+       * Calculate new points.
+       */
+      float x1 = (icosphere_pts.at(3 * icosphere_tris.at(t)) + icosphere_pts.at(3 * icosphere_tris.at(t + 1))) / 2.0f;
+      float x2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1)) + icosphere_pts.at(3 * icosphere_tris.at(t + 2))) / 2.0f;
+      float x3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2)) + icosphere_pts.at(3 * icosphere_tris.at(t))) / 2.0f;
+      float y1 = (icosphere_pts.at(3 * icosphere_tris.at(t) + 1) + icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 1)) / 2.0f;
+      float y2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 1) + icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 1)) / 2.0f;
+      float y3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 1) + icosphere_pts.at(3 * icosphere_tris.at(t) + 1)) / 2.0f;
+      float z1 = (icosphere_pts.at(3 * icosphere_tris.at(t) + 2) + icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 2)) / 2.0f;
+      float z2 = (icosphere_pts.at(3 * icosphere_tris.at(t + 1) + 2) + icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 2)) / 2.0f;
+      float z3 = (icosphere_pts.at(3 * icosphere_tris.at(t + 2) + 2) + icosphere_pts.at(3 * icosphere_tris.at(t) + 2)) / 2.0f;
+      float m1 = 1.0f / sqrt(x1 * x1 + y1 * y1 + z1 * z1);
+      float m2 = 1.0f / sqrt(x2 * x2 + y2 * y2 + z2 * z2);
+      float m3 = 1.0f / sqrt(x3 * x3 + y3 * y3 + z3 * z3);
+      x1 *= m1;
+      y1 *= m1;
+      z1 *= m1;
+      x2 *= m2;
+      y2 *= m2;
+      z2 *= m2;
+      x3 *= m3;
+      y3 *= m3;
+      z3 *= m3;
+
+      /*
+       * Insert points only if not already in map.
+       */
+      if (!already_inserted_pts.count({x1, y1, z1})) {
+	icosphere_pts.push_back(x1);
+	icosphere_pts.push_back(y1);
+	icosphere_pts.push_back(z1);
+	already_inserted_pts.insert({{x1, y1, z1}, old_pts_end});
+	++old_pts_end;
+      }
+      if (!already_inserted_pts.count({x2, y2, z2})) {
+	icosphere_pts.push_back(x2);
+	icosphere_pts.push_back(y2);
+	icosphere_pts.push_back(z2);
+	already_inserted_pts.insert({{x2, y2, z2}, old_pts_end});
+	++old_pts_end;
+      }
+      if (!already_inserted_pts.count({x3, y3, z3})) {
+	icosphere_pts.push_back(x3);
+	icosphere_pts.push_back(y3);
+	icosphere_pts.push_back(z3);
+	already_inserted_pts.insert({{x3, y3, z3}, old_pts_end});
+	++old_pts_end;
+      }
+
+      /*
+       * Add triangles.
+       */
+      new_tris.push_back(icosphere_tris.at(t));
+      new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
+      new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
+      new_tris.push_back(icosphere_tris.at(t + 1));
+      new_tris.push_back(already_inserted_pts.at({x2, y2, z2}));
+      new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
+      new_tris.push_back(icosphere_tris.at(t + 2));
+      new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
+      new_tris.push_back(already_inserted_pts.at({x2, y2, z2}));
+      new_tris.push_back(already_inserted_pts.at({x1, y1, z1}));
+      new_tris.push_back(already_inserted_pts.at({x2, y2, z2}));
+      new_tris.push_back(already_inserted_pts.at({x3, y3, z3}));
+    }
+    
+    icosphere_tris = std::move(new_tris);
+  }
+  return std::make_pair(icosphere_pts, icosphere_tris);
 }
 
 /*

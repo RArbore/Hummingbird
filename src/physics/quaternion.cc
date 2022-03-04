@@ -12,6 +12,9 @@
 
 #include <physics/quaternion.h>
 
+/*
+ * Normalize quaternion.
+ */
 void Quaternion::normalize() {
   float factor = invSquareRoot(x*x + y*y + z*z + w*w); 
   x *= factor; 
@@ -21,11 +24,12 @@ void Quaternion::normalize() {
 }
 
 float Quaternion::invSquareRoot(const float n) const {
-  float outf[4];
-  _mm_store_ps(outf, _mm_rsqrt_ps(_mm_set_ps(n, 0.0f, 0.0f, 0.0f)));
-  return outf[0];
+  return 1.0f / sqrt(n);
 }
 
+/*
+ * Convert between quaternions and rotation matrix.
+ */
 Matrix3 Quaternion::convert() const {
   Matrix3 m; 
   
