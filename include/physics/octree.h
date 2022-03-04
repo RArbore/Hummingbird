@@ -10,7 +10,7 @@
     You should have received a copy of the GNU General Public License
     along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.  */
 
-# pragma once
+#pragma once
 
 #include <vector>
 
@@ -26,7 +26,7 @@ static constexpr unsigned int c_max_depth = 5;
  */
 class Octree {
 public:
-  Octree(unsigned int max_depth_i); 
+  explicit Octree(unsigned int max_depth_i); 
 
 private:
   struct OctreeNode {

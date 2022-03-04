@@ -12,4 +12,4 @@
 
 #include <physics/octree.h>
 
-Octree::Octree(unsigned int max_depth_i): max_depth(max_depth_i) { }
+Octree::Octree(unsigned int max_depth_i): max_depth(max_depth_i) {}
