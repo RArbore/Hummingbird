@@ -1,10 +1,24 @@
+/*  This file is part of Hummingbird.
+    Hummingbird is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    any later version.
+    Hummingbird is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+    You should have received a copy of the GNU General Public License
+    along with Hummingbird. If not, see <https://www.gnu.org/licenses/>.  */
+
 # pragma once
 
-#include "physics/engine.h"
+#include <vector>
+
+#include <physics/engine.h>
 
 // this maxDepth subject to change, 
 // specifically potentially as a function of engine.get_num_bodies(); 
-static constexpr long c_maxDepth = 5; 
+static constexpr unsigned int c_max_depth = 5; 
 
 /**
  * @brief Class to efficiently find potential collisions
@@ -12,15 +26,15 @@ static constexpr long c_maxDepth = 5;
  */
 class Octree {
 public:
-  Octree(size_t maxDepth = c_maxDepth); 
+  Octree(unsigned int max_depth_i); 
 
 private:
   struct OctreeNode {
-    OctreeNode* children; // pointer to the first child
-    size_t indexBody; // in engine vectors for body
-    bool isLeaf; 
+    unsigned int children[8];
+    unsigned int index_body;
+    bool is_leaf; 
   }; 
 
-  OctreeNode* root; 
-  size_t maxDepth; 
+  std::vector<OctreeNode> nodes;
+  size_t max_depth; 
 };
