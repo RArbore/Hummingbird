@@ -93,9 +93,9 @@ void Engine::update(const float dt) {
   /*
    * Construct octree for collision detection.
    */
-  Octree octree(C_MAX_DEPTH, {-100.0f, 100.0f, -100.0f, 100.0f, -100.0f, 100.0f});
+  auto octree = std::make_unique<Octree>(C_MAX_DEPTH, AABB{-100.0f, 100.0f, -100.0f, 100.0f, -100.0f, 100.0f});
   for (unsigned int i = 0; i < num_bodies; ++i) {
-    octree.insert(i, get_aabb_at(i));
+    octree->insert(i, get_aabb_at(i));
   }
 }
 

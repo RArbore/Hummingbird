@@ -28,19 +28,20 @@ void Octree::insert(const unsigned int to_store, const AABB& aabb, const unsigne
   auto& node = nodes.at(root);
   if (node.num_stored < C_NODE_SIZE) node.bodies[node.num_stored++] = to_store;
   else {
+    unsigned int first_child = node.first_child;
     if (!node.first_child) {
-      node.first_child = static_cast<unsigned int>(nodes.size());
-      for (unsigned int i = 0; i < 8; ++i) nodes.emplace_back();
+      first_child = static_cast<unsigned int>(nodes.size());
+      node.first_child = first_child;
+      for (unsigned int i = 0; i < 8; ++i) nodes.emplace_back(); // Reference node is invalid after this point
     }
-    AABB sub_aabb;
-    if (intersects(aabb, sub_aabb = get_sub_aabb<false, false, false>(node_aabb))) insert(to_store, aabb, node.first_child, sub_aabb);
-    if (intersects(aabb, sub_aabb = get_sub_aabb<true, false, false>(node_aabb))) insert(to_store, aabb, node.first_child + 1, sub_aabb);
-    if (intersects(aabb, sub_aabb = get_sub_aabb<false, true, false>(node_aabb))) insert(to_store, aabb, node.first_child + 2, sub_aabb);
-    if (intersects(aabb, sub_aabb = get_sub_aabb<true, true, false>(node_aabb))) insert(to_store, aabb, node.first_child + 3, sub_aabb);
-    if (intersects(aabb, sub_aabb = get_sub_aabb<false, false, true>(node_aabb))) insert(to_store, aabb, node.first_child + 4, sub_aabb);
-    if (intersects(aabb, sub_aabb = get_sub_aabb<true, false, true>(node_aabb))) insert(to_store, aabb, node.first_child + 5, sub_aabb);
-    if (intersects(aabb, sub_aabb = get_sub_aabb<false, true, true>(node_aabb))) insert(to_store, aabb, node.first_child + 6, sub_aabb);
-    if (intersects(aabb, sub_aabb = get_sub_aabb<true, true, true>(node_aabb))) insert(to_store, aabb, node.first_child + 7, sub_aabb);
+    if (intersects(aabb, get_sub_aabb<false, false, false>(node_aabb))) insert(to_store, aabb, first_child, get_sub_aabb<false, false, false>(node_aabb));
+    if (intersects(aabb, get_sub_aabb<true, false, false>(node_aabb))) insert(to_store, aabb, first_child + 1, get_sub_aabb<true, false, false>(node_aabb));
+    if (intersects(aabb, get_sub_aabb<false, true, false>(node_aabb))) insert(to_store, aabb, first_child + 2, get_sub_aabb<false, true, false>(node_aabb));
+    if (intersects(aabb, get_sub_aabb<true, true, false>(node_aabb))) insert(to_store, aabb, first_child + 3, get_sub_aabb<true, true, false>(node_aabb));
+    if (intersects(aabb, get_sub_aabb<false, false, true>(node_aabb))) insert(to_store, aabb, first_child + 4, get_sub_aabb<false, false, true>(node_aabb));
+    if (intersects(aabb, get_sub_aabb<true, false, true>(node_aabb))) insert(to_store, aabb, first_child + 5, get_sub_aabb<true, false, true>(node_aabb));
+    if (intersects(aabb, get_sub_aabb<false, true, true>(node_aabb))) insert(to_store, aabb, first_child + 6, get_sub_aabb<false, true, true>(node_aabb));
+    if (intersects(aabb, get_sub_aabb<true, true, true>(node_aabb))) insert(to_store, aabb, first_child + 7, get_sub_aabb<true, true, true>(node_aabb));
   }
 }
 

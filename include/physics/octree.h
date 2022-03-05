@@ -16,7 +16,7 @@
 
 // specifically potentially as a function of engine.get_num_bodies(); 
 static constexpr unsigned int C_MAX_DEPTH = 5; 
-static constexpr unsigned int C_NODE_SIZE = 8;
+static constexpr unsigned int C_NODE_SIZE = 64;
 
 struct AABB {
   float x1, x2, y1, y2, z1, z2;
