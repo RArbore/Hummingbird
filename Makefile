@@ -30,7 +30,7 @@ build/interface.o: src/interface.cc include/interface.h include/physics/engine.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/cli.o: src/cli.cc include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
-build/engine.o: src/physics/engine.cc include/physics/engine.h include/physics/collider.h include/physics/quaternion.h include/cli.h
+build/engine.o: src/physics/engine.cc include/physics/engine.h include/physics/collider.h include/physics/quaternion.h include/physics/octree.h include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/collider.o: src/physics/collider.cc include/physics/collider.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<

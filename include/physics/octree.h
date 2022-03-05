@@ -14,9 +14,6 @@
 
 #include <vector>
 
-#include <physics/engine.h>
-
-// this maxDepth subject to change, 
 // specifically potentially as a function of engine.get_num_bodies(); 
 static constexpr unsigned int C_MAX_DEPTH = 5; 
 static constexpr unsigned int C_NODE_SIZE = 8;
@@ -27,7 +24,7 @@ struct AABB {
 
 bool intersects(const AABB& aabb1, const AABB& aabb2);
 
-template<unsigned int x, unsigned int y, unsigned int z>
+template<bool x, bool y, bool z>
 __attribute__((always_inline))
 inline AABB get_sub_aabb(const AABB& aabb) {
   return {
@@ -58,7 +55,7 @@ private:
 
   void insert(const unsigned int to_store, const AABB& aabb, const unsigned int root, const AABB& node_aabb);
 
-  std::vector<Node> nodes;
-  size_t max_depth; 
+  unsigned int max_depth; 
   AABB root_bound;
+  std::vector<Node> nodes;
 };

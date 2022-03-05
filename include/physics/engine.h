@@ -23,6 +23,7 @@
 
 #include <physics/quaternion.h>
 #include <physics/collider.h>
+#include <physics/octree.h>
 #include <cli.h>
 
 /*
@@ -76,6 +77,7 @@ private:
   std::vector<std::unique_ptr<Collider>> colliders;
 
   Transform get_transform_at(const std::size_t i);
+  AABB get_aabb_at(const std::size_t i);
   void dynamics_update(const float dt);
 
   /*

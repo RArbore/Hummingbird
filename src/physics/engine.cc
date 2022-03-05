@@ -84,7 +84,19 @@ const std::vector<std::unique_ptr<Collider>> &Engine::get_colliders() const { re
 std::size_t Engine::get_num_bodies() const { return num_bodies; }
 
 void Engine::update(const float dt) {
+  /*
+   * Update positions / velocities / forces of 
+   * bodies.
+   */
   dynamics_update(dt);
+
+  /*
+   * Construct octree for collision detection.
+   */
+  Octree octree(C_MAX_DEPTH, {-100.0f, 100.0f, -100.0f, 100.0f, -100.0f, 100.0f});
+  for (unsigned int i = 0; i < num_bodies; ++i) {
+    octree.insert(i, get_aabb_at(i));
+  }
 }
 
 void Engine::dynamics_update(const float dt) {
@@ -169,4 +181,16 @@ void Engine::fused_multiply_add_with_mass(const float dt, const __m256& dt_a, fl
 
 Transform Engine::get_transform_at(const std::size_t i) {
   return Transform{pos.x.at(i), pos.y.at(i), pos.z.at(i)};
+}
+
+AABB Engine::get_aabb_at(const std::size_t i) {
+  const auto& unknown_coll = colliders.at(i).get();
+  float pos_x = pos.x.at(i);
+  float pos_y = pos.y.at(i);
+  float pos_z = pos.z.at(i);
+  if (SphereCollider* coll = dynamic_cast<SphereCollider*>(unknown_coll)) {
+    float rad = coll->radius;
+    return AABB{pos_x - rad, pos_x + rad, pos_y - rad, pos_y + rad, pos_z - rad, pos_z + rad};
+  }
+  else return AABB{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 }

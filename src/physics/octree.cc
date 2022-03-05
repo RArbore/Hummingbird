@@ -18,7 +18,7 @@ bool intersects(const AABB& aabb1, const AABB& aabb2) {
     && aabb1.z1 <= aabb2.z2 && aabb2.z1 <= aabb1.z2;
 }
 
-Octree::Octree(const unsigned int max_depth_i, const AABB& aabb): max_depth(max_depth_i), root_bound(aabb) {}
+Octree::Octree(const unsigned int max_depth_i, const AABB& aabb): max_depth(max_depth_i), root_bound(aabb), nodes(1) {}
 
 void Octree::insert(const unsigned int to_store, const AABB& aabb) {
   insert(to_store, aabb, 0, root_bound);
@@ -26,7 +26,7 @@ void Octree::insert(const unsigned int to_store, const AABB& aabb) {
 
 void Octree::insert(const unsigned int to_store, const AABB& aabb, const unsigned int root, const AABB& node_aabb) {
   auto& node = nodes.at(root);
-  if (node.num_stored < C_MAX_DEPTH) node.bodies[node.num_stored++] = to_store;
+  if (node.num_stored < C_NODE_SIZE) node.bodies[node.num_stored++] = to_store;
   else {
     if (!node.first_child) {
       node.first_child = static_cast<unsigned int>(nodes.size());
