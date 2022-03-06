@@ -46,10 +46,10 @@ public:
 
 private:
   struct Node {
-    Node(): bodies{0, 0, 0, 0, 0, 0, 0, 0}, num_stored(0), first_child(0) {}
-    unsigned int bodies[C_NODE_SIZE]; 
+    Node(): num_stored(0), first_child(0), bodies{0, 0, 0, 0, 0, 0, 0, 0} {}
     unsigned int num_stored;
     unsigned int first_child;
+    unsigned int bodies[C_NODE_SIZE]; 
     bool is_leaf();
   }; 
 
