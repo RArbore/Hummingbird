@@ -62,7 +62,7 @@ private:
   /*
    * Constants / configuration.
    */
-  float grav_constant;
+  float grav_constant, boundary[6];
   std::size_t num_bodies;
 
   /*

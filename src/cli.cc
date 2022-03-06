@@ -129,6 +129,28 @@ int Config::initialize() {
 
   if (init_constant(root, "GRAVITY", grav_constant, [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
 
+  if (init_constant(root, "MIN_X", boundary[0], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
+  if (init_constant(root, "MAX_X", boundary[1], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
+  if (init_constant(root, "MIN_Y", boundary[2], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
+  if (init_constant(root, "MAX_Y", boundary[3], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
+  if (init_constant(root, "MIN_Z", boundary[4], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
+  if (init_constant(root, "MAX_Z", boundary[5], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
+
+  if (boundary[0] >= boundary[1]) {
+    std::cerr << "ERROR: MIN_X must be smaller than MAX_X." << std::endl;
+    return -1;
+  }
+
+  if (boundary[2] >= boundary[3]) {
+    std::cerr << "ERROR: MIN_Y must be smaller than MAX_Y." << std::endl;
+    return -1;
+  }
+
+  if (boundary[4] >= boundary[5]) {
+    std::cerr << "ERROR: MIN_Z must be smaller than MAX_Z." << std::endl;
+    return -1;
+  }
+
   if (root["TICKS_PER_FRAME"].isIntegral()) ticks_per_frame = root["TICKS_PER_FRAME"].as<std::size_t>();
 
   const Json::Value &jv_bodies = root["BODIES"];

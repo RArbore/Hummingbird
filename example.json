@@ -1,6 +1,12 @@
 {
     "GRAVITY" : 1.0,
     "TICKS_PER_FRAME" : 1,
+    "MIN_X" : 0.0,
+    "MAX_X" : 50.0,
+    "MIN_Y" : 0.0,
+    "MAX_Y" : 50.0,
+    "MIN_Z" : 0.0,
+    "MAX_Z" : 50.0,
     "BODIES" : [
 	{
 	    "TYPE": "RANDOM",
@@ -12,13 +18,13 @@
 		"m" : 1.0,
 		"r" : 1.0
 	    },
-	    "num_bodies" : 100000,
-	    "min_x" : 0.0,
-	    "min_y" : 0.0,
-	    "min_z" : 0.0,
-	    "max_x" : 50.0,
-	    "max_y" : 50.0,
-	    "max_z" : 50.0
+	    "num_bodies" : 10000,
+	    "min_x" : 5.0,
+	    "min_y" : 5.0,
+	    "min_z" : 5.0,
+	    "max_x" : 45.0,
+	    "max_y" : 45.0,
+	    "max_z" : 45.0
 	}
     ]
 }

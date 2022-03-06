@@ -23,6 +23,7 @@ using vector32f = std::vector<float, boost::alignment::aligned_allocator<float, 
  * which provides some constants and bodies.
  */
 Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
+				   boundary{cfg.boundary[0], cfg.boundary[1], cfg.boundary[2], cfg.boundary[3], cfg.boundary[4], cfg.boundary[5]},
 				   num_bodies(cfg.num_bodies),
 				   force{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)} {
   /*
