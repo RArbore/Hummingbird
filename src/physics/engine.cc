@@ -19,6 +19,12 @@
 using vector32f = std::vector<float, boost::alignment::aligned_allocator<float, 32>>;
 
 /*
+ * Number of threads used for collision 
+ * detection.
+ */
+static constexpr unsigned int NUM_COLLISION_DETECTION_THREADS = 16;
+
+/*
  * Construct engine based on configuration,
  * which provides some constants and bodies.
  */
@@ -41,6 +47,8 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
   mass.reserve(num_bodies);
   ang_pos.reserve(num_bodies);
   colliders.reserve(num_bodies);
+
+  omp_init_lock(&collision_set_lock);
 
   /*
    * Config bodies are stored as variants,
@@ -73,6 +81,10 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
   multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
 }
 
+Engine::~Engine() {
+  omp_destroy_lock(&collision_set_lock);
+}
+
 /*
  * Getters for body data (used by graphics).
  */
@@ -97,6 +109,27 @@ void Engine::update(const float dt) {
   auto octree = std::make_unique<Octree>(*reinterpret_cast<AABB*>(boundary));
   for (unsigned int i = 0; i < num_bodies; ++i) {
     octree->insert(i, get_aabb_at(i));
+  }
+
+  /*
+   * Perform collision detection.
+   */
+  std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>> collisions;
+  std::unordered_set<unsigned int> working_sets[NUM_COLLISION_DETECTION_THREADS];
+#pragma omp parallel for num_threads(NUM_COLLISION_DETECTION_THREADS) 
+  for (unsigned int i = 0; i < num_bodies; ++i) {
+    auto& working_set = working_sets[omp_get_thread_num()];
+    octree->possibilities(i, get_aabb_at(i), working_set);
+    auto& my_coll = colliders[i];
+    auto my_trans = get_transform_at(i);
+    for (unsigned int other : working_set) {
+      auto resp = my_coll->checkCollision(*colliders[other], my_trans, get_transform_at(other));
+      if (resp.collides) {
+	omp_set_lock(&collision_set_lock);
+	collisions.emplace_back(resp, i, other);
+	omp_unset_lock(&collision_set_lock);
+      }
+    }
   }
 }
 

@@ -42,7 +42,7 @@ public:
   explicit Octree(const AABB& aabb); 
 
   void insert(const unsigned int to_store, const AABB& aabb);
-  void possibilities(const AABB& aabb, std::unordered_set<unsigned int>& dest);
+  void possibilities(const unsigned int id, const AABB& aabb, std::unordered_set<unsigned int>& dest);
 
 private:
   struct Node {
@@ -54,7 +54,7 @@ private:
   }; 
 
   void insert(const unsigned int to_store, const AABB& aabb, const unsigned int root, const AABB& node_aabb);
-  void possibilities(const AABB& aabb, std::unordered_set<unsigned int>& dest, const unsigned int root, const AABB& node_aabb);
+  void possibilities(const unsigned int id, const AABB& aabb, std::unordered_set<unsigned int>& dest, const unsigned int root, const AABB& node_aabb);
 
   AABB root_bound;
   std::vector<Node> nodes;

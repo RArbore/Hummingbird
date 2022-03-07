@@ -47,26 +47,27 @@ void Octree::insert(const unsigned int to_store, const AABB& aabb, const unsigne
   insert(to_store, aabb, first_child + 7, get_sub_aabb<true, true, true>(node_aabb));
 }
 
-void Octree::possibilities(const AABB& aabb, std::unordered_set<unsigned int>& dest) {
-  possibilities(aabb, dest, 0, root_bound);
+void Octree::possibilities(const unsigned int id, const AABB& aabb, std::unordered_set<unsigned int>& dest) {
+  possibilities(id, aabb, dest, 0, root_bound);
 }
 
-void Octree::possibilities(const AABB& aabb, std::unordered_set<unsigned int>& dest, const unsigned int root, const AABB& node_aabb) {
+void Octree::possibilities(const unsigned int id, const AABB& aabb, std::unordered_set<unsigned int>& dest, const unsigned int root, const AABB& node_aabb) {
   if (!intersects(aabb, node_aabb)) return;
   auto& node = nodes[root];
   for (unsigned int i = 0; i < node.num_stored; ++i) {
-    dest.insert(node.bodies[i]);
+    auto body = node.bodies[i];
+    if (id <= body) dest.insert(body);
   }
   unsigned int first_child = node.first_child;
   if (first_child) {
-    possibilities(aabb, dest, first_child, get_sub_aabb<false, false, false>(node_aabb));
-    possibilities(aabb, dest, first_child + 1, get_sub_aabb<true, false, false>(node_aabb));
-    possibilities(aabb, dest, first_child + 2, get_sub_aabb<false, true, false>(node_aabb));
-    possibilities(aabb, dest, first_child + 3, get_sub_aabb<true, true, false>(node_aabb));
-    possibilities(aabb, dest, first_child + 4, get_sub_aabb<false, false, true>(node_aabb));
-    possibilities(aabb, dest, first_child + 5, get_sub_aabb<true, false, true>(node_aabb));
-    possibilities(aabb, dest, first_child + 6, get_sub_aabb<false, true, true>(node_aabb));
-    possibilities(aabb, dest, first_child + 7, get_sub_aabb<true, true, true>(node_aabb));
+    possibilities(id, aabb, dest, first_child, get_sub_aabb<false, false, false>(node_aabb));
+    possibilities(id, aabb, dest, first_child + 1, get_sub_aabb<true, false, false>(node_aabb));
+    possibilities(id, aabb, dest, first_child + 2, get_sub_aabb<false, true, false>(node_aabb));
+    possibilities(id, aabb, dest, first_child + 3, get_sub_aabb<true, true, false>(node_aabb));
+    possibilities(id, aabb, dest, first_child + 4, get_sub_aabb<false, false, true>(node_aabb));
+    possibilities(id, aabb, dest, first_child + 5, get_sub_aabb<true, false, true>(node_aabb));
+    possibilities(id, aabb, dest, first_child + 6, get_sub_aabb<false, true, true>(node_aabb));
+    possibilities(id, aabb, dest, first_child + 7, get_sub_aabb<true, true, true>(node_aabb));
   }
 }
 

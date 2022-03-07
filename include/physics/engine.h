@@ -21,6 +21,8 @@
 
 #include <boost/align/aligned_allocator.hpp>
 
+#include <omp.h>
+
 #include <physics/quaternion.h>
 #include <physics/collider.h>
 #include <physics/octree.h>
@@ -41,6 +43,7 @@
 class Engine {
 public:
   explicit Engine(const Config& cfg);
+  ~Engine();
 
   void update(const float dt);
 
@@ -75,6 +78,8 @@ private:
   std::vector<float> mass;
   std::vector<Quaternion> ang_pos;
   std::vector<std::unique_ptr<Collider>> colliders;
+
+  omp_lock_t collision_set_lock;
 
   Transform get_transform_at(const std::size_t i);
   AABB get_aabb_at(const std::size_t i);

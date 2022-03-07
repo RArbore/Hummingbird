@@ -27,11 +27,14 @@ CollisionResponse SphereCollider::checkCollision(const Collider& other, const Tr
 CollisionResponse SphereCollider::checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const {
   Transform BmA = otherPos - myPos;
   CollisionResponse result;
-  result.depth = sqrt(BmA * BmA);
-  result.collides = result.depth <= radius + other.radius;
-  result.normal = BmA / result.depth;
-  result.AinB = myPos + (result.normal * radius);
-  result.BinA = otherPos + (result.normal * -radius);
+  float depth2 = BmA * BmA;
+  result.collides = depth2 <= (radius + other.radius) * (radius + other.radius);
+  if (result.collides) {
+    result.depth = sqrt(BmA * BmA);
+    result.normal = BmA / result.depth;
+    result.AinB = myPos + (result.normal * radius);
+    result.BinA = otherPos + (result.normal * -radius);
+  }
   return result;
 }
 
