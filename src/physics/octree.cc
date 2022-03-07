@@ -56,7 +56,7 @@ void Octree::possibilities(const unsigned int id, const AABB& aabb, std::unorder
   auto& node = nodes[root];
   for (unsigned int i = 0; i < node.num_stored; ++i) {
     auto body = node.bodies[i];
-    if (id <= body) dest.insert(body);
+    if (id < body) dest.insert(body);
   }
   unsigned int first_child = node.first_child;
   if (first_child) {

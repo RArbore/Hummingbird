@@ -22,7 +22,7 @@ using vector32f = std::vector<float, boost::alignment::aligned_allocator<float, 
  * Number of threads used for collision 
  * detection.
  */
-static constexpr unsigned int NUM_COLLISION_DETECTION_THREADS = 16;
+static constexpr unsigned int NUM_COLLISION_DETECTION_THREADS = 32;
 
 /*
  * Construct engine based on configuration,
@@ -214,14 +214,14 @@ void Engine::fused_multiply_add_with_mass(const float dt, const __m256& dt_a, fl
 }
 
 Transform Engine::get_transform_at(const std::size_t i) {
-  return Transform{pos.x.at(i), pos.y.at(i), pos.z.at(i)};
+  return Transform{pos.x[i], pos.y[i], pos.z[i]};
 }
 
 AABB Engine::get_aabb_at(const std::size_t i) {
-  const auto& unknown_coll = colliders.at(i).get();
-  float pos_x = pos.x.at(i);
-  float pos_y = pos.y.at(i);
-  float pos_z = pos.z.at(i);
+  const auto& unknown_coll = colliders[i].get();
+  float pos_x = pos.x[i];
+  float pos_y = pos.y[i];
+  float pos_z = pos.z[i];
   if (SphereCollider* coll = dynamic_cast<SphereCollider*>(unknown_coll)) {
     float rad = coll->radius;
     return AABB{pos_x - rad, pos_x + rad, pos_y - rad, pos_y + rad, pos_z - rad, pos_z + rad};

@@ -9,7 +9,7 @@
     "MAX_Z" : 50.0,
     "BODIES" : [
 	{
-	    "TYPE": "RANDOM",
+	    "TYPE" : "RANDOM",
 	    "TEMPLATE" : {
 		"TYPE" : "SPHERE",
 		"x" : 0.0,

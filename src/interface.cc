@@ -411,7 +411,7 @@ void Graphics::render_tick(const float dt) {
   for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
     const Collider* coll = engine.get_colliders()[i].get();
     if (const SphereCollider* sphere_coll = dynamic_cast<const SphereCollider*>(coll)) {
-      const float scale_factor = inv_golden_ratio * sphere_coll->radius;
+      const float scale_factor = sphere_coll->radius;
       const auto& quat = engine.get_ang_pos()[i];
       const glm::mat4 model_rot = glm::mat4_cast(glm::quat(quat.w, quat.x, quat.y, quat.z));
       const glm::mat4 model_pos = glm::translate(identity, glm::vec3(engine.get_pos().x[i], engine.get_pos().y[i], engine.get_pos().z[i]));
