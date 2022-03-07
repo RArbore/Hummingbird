@@ -7,3 +7,6 @@ test
 
 # editor files
 .vscode/*
+
+# perf data
+perf*

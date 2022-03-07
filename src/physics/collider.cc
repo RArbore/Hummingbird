@@ -13,6 +13,7 @@
 #include <physics/collider.h>
 
 SphereCollider::SphereCollider(float radius_i): radius(radius_i) {}
+WallCollider::WallCollider(float nx_i, float ny_i, float nz_i): nx(nx_i), ny(ny_i), nz(nz_i) {}
 
 /*
  * Double callback functions to deduce other collider type.
@@ -21,20 +22,46 @@ CollisionResponse SphereCollider::checkCollision(const Collider& other, const Tr
   return other.checkCollision(*this, otherPos, myPos);
 }
 
+CollisionResponse WallCollider::checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const {
+  return other.checkCollision(*this, otherPos, myPos);
+}
+
 /*
  * Check collision between 2 spheres.
  */
 CollisionResponse SphereCollider::checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const {
-  Transform BmA = otherPos - myPos;
   CollisionResponse result;
+  Transform BmA = otherPos - myPos;
   float depth2 = BmA * BmA;
   result.collides = depth2 <= (radius + other.radius) * (radius + other.radius);
   if (result.collides) {
     result.depth = sqrt(BmA * BmA);
     result.normal = BmA / result.depth;
-    result.AinB = myPos + (result.normal * radius);
-    result.BinA = otherPos + (result.normal * -radius);
   }
+  return result;
+}
+
+CollisionResponse SphereCollider::checkCollision(const WallCollider& other, const Transform& myPos, const Transform& otherPos) const {
+  CollisionResponse result;
+  result.normal = Transform{other.nx, other.ny, other.nz};
+  float sphere_dist = myPos * result.normal;
+  float plane_dist = otherPos * result.normal;
+  float dist_diff = plane_dist - sphere_dist;
+  float radius_div_2 = radius / 2.0f;
+  result.collides = dist_diff < radius_div_2;
+  if (result.collides) {
+    result.depth = radius_div_2 - dist_diff;
+  }
+  return result;
+}
+
+CollisionResponse WallCollider::checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const {
+  return other.checkCollision(*this, otherPos, myPos);
+}
+
+CollisionResponse WallCollider::checkCollision([[maybe_unused]] const WallCollider& other, [[maybe_unused]] const Transform& myPos, [[maybe_unused]] const Transform& otherPos) const {
+  CollisionResponse result;
+  result.collides = false;
   return result;
 }
 

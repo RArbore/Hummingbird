@@ -36,14 +36,13 @@ Transform operator/(const Transform& a, float b);
  * can properly respond to the collision.
  */
 struct CollisionResponse {
-  Transform AinB;
-  Transform BinA;
   Transform normal;
   float depth;
   bool collides;
 };
 
 struct SphereCollider;
+struct WallCollider;
 
 /*
  * Every collider inherits virtual methods for
@@ -57,6 +56,7 @@ struct SphereCollider;
 struct Collider {
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const = 0;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const = 0;
+  virtual CollisionResponse checkCollision(const WallCollider& other, const Transform& myPos, const Transform& otherPos) const = 0;
   virtual ~Collider() = default;
 };
 
@@ -65,4 +65,13 @@ struct SphereCollider : public Collider {
   explicit SphereCollider(float radius_i);
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const override;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const override;
+  virtual CollisionResponse checkCollision(const WallCollider& other, const Transform& myPos, const Transform& otherPos) const override;
+};
+
+struct WallCollider : public Collider {
+  float nx, ny, nz;
+  WallCollider(float nx_i, float ny_i, float nz_i);
+  virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const override;
+  virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const override;
+  virtual CollisionResponse checkCollision(const WallCollider& other, const Transform& myPos, const Transform& otherPos) const override;
 };
