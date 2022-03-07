@@ -12,11 +12,10 @@
 
 #pragma once
 
+#include <unordered_set>
 #include <vector>
 
-// specifically potentially as a function of engine.get_num_bodies(); 
-static constexpr unsigned int C_MAX_DEPTH = 5; 
-static constexpr unsigned int C_NODE_SIZE = 64;
+static constexpr unsigned int NODE_SIZE = 64;
 
 struct AABB {
   float x1, x2, y1, y2, z1, z2;
@@ -40,22 +39,23 @@ inline AABB get_sub_aabb(const AABB& aabb) {
  */
 class Octree {
 public:
-  explicit Octree(const unsigned int max_depth_i, const AABB& aabb); 
+  explicit Octree(const AABB& aabb); 
 
   void insert(const unsigned int to_store, const AABB& aabb);
+  void possibilities(const AABB& aabb, std::unordered_set<unsigned int>& dest);
 
 private:
   struct Node {
     Node(): num_stored(0), first_child(0), bodies{0, 0, 0, 0, 0, 0, 0, 0} {}
     unsigned int num_stored;
     unsigned int first_child;
-    unsigned int bodies[C_NODE_SIZE]; 
+    unsigned int bodies[NODE_SIZE]; 
     bool is_leaf();
   }; 
 
   void insert(const unsigned int to_store, const AABB& aabb, const unsigned int root, const AABB& node_aabb);
+  void possibilities(const AABB& aabb, std::unordered_set<unsigned int>& dest, const unsigned int root, const AABB& node_aabb);
 
-  unsigned int max_depth; 
   AABB root_bound;
   std::vector<Node> nodes;
 };
