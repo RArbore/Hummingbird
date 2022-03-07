@@ -130,6 +130,7 @@ void Engine::update(const float dt) {
 	omp_unset_lock(&collision_set_lock);
       }
     }
+    working_set.clear();
   }
 }
 
