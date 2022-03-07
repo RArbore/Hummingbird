@@ -77,8 +77,8 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
    * Initialize y force vector w/ gravitational 
    * constant.
    */
-  const __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
-  multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
+  //const __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
+  //multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
 }
 
 Engine::~Engine() {
@@ -120,10 +120,10 @@ void Engine::update(const float dt) {
   for (unsigned int i = 0; i < num_bodies; ++i) {
     auto& working_set = working_sets[omp_get_thread_num()];
     octree->possibilities(i, get_aabb_at(i), working_set);
-    auto& my_coll = colliders[i];
+    auto& my_coll = *colliders[i];
     auto my_trans = get_transform_at(i);
     for (unsigned int other : working_set) {
-      auto resp = my_coll->checkCollision(*colliders[other], my_trans, get_transform_at(other));
+      auto resp = my_coll.checkCollision(*colliders[other], my_trans, get_transform_at(other));
       if (resp.collides) {
 	omp_set_lock(&collision_set_lock);
 	collisions.emplace_back(resp, i, other);
