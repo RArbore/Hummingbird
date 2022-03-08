@@ -20,6 +20,11 @@ bool intersects(const AABB& aabb1, const AABB& aabb2) {
 
 Octree::Octree(const AABB& aabb): root_bound(aabb), nodes(1) {}
 
+/*
+ * Insert a body into the octree. While the
+ * AABB determines where to insert, only the
+ * body's ID is actually stored.
+ */
 void Octree::insert(const unsigned int to_store, const AABB& aabb) {
   insert(to_store, aabb, 0, root_bound);
 }
@@ -47,6 +52,15 @@ void Octree::insert(const unsigned int to_store, const AABB& aabb, const unsigne
   insert(to_store, aabb, first_child + 7, get_sub_aabb<true, true, true>(node_aabb));
 }
 
+/*
+ * Query for possible collisions between
+ * an input AABB and AABBs inserted into
+ * the tree. We also pass in the ID of the
+ * body we're querying, as we don't want
+ * to double count collisions (we only
+ * return bodies whose ID is larger than
+ * the one passed in).
+ */
 void Octree::possibilities(const unsigned int id, const AABB& aabb, std::unordered_set<unsigned int>& dest) {
   possibilities(id, aabb, dest, 0, root_bound);
 }

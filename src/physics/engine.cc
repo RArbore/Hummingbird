@@ -152,7 +152,7 @@ void Engine::update(const float dt) {
     float ny = coll.normal.y;
     float nz = coll.normal.z;
     float j = -(elasticity + 1.0f) * (nx * dvx + ny * dvy + nz * dvz) / ((1.0f / mass1) + (1.0f / mass2));
-    float depth = coll.depth * 0.5f * dt;
+    float depth = coll.depth * dt;
     pos.x[first] += nx * depth * m2_factor;
     pos.y[first] += ny * depth * m2_factor;
     pos.z[first] += nz * depth * m2_factor;

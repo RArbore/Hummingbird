@@ -15,6 +15,12 @@
 #include <unordered_set>
 #include <vector>
 
+/*
+ * When checking bounds for objects, we only
+ * consider AABBs - we can deal with
+ * body-specific complexity after querying
+ * possible collisions.
+ */
 static constexpr unsigned int NODE_SIZE = 64;
 
 struct AABB {
@@ -23,6 +29,10 @@ struct AABB {
 
 bool intersects(const AABB& aabb1, const AABB& aabb2);
 
+/*
+ * Get child AABB, splitting parent AABB
+ * into eight pieces.
+ */
 template<bool x, bool y, bool z>
 __attribute__((always_inline))
 inline AABB get_sub_aabb(const AABB& aabb) {
@@ -33,9 +43,12 @@ inline AABB get_sub_aabb(const AABB& aabb) {
   };
 }
 
-/**
- * @brief Class to efficiently find potential collisions
- * 
+/*
+ * Octree class implements a linear octree.
+ * This allows for the efficient insertion
+ * and querying of AABBs. Each node is
+ * stored in a vector, and "pointers" are
+ * indices into this vector.
  */
 class Octree {
 public:
