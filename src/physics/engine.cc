@@ -29,6 +29,7 @@ static constexpr unsigned int NUM_COLLISION_DETECTION_THREADS = 32;
  * which provides some constants and bodies.
  */
 Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
+				   elasticity(cfg.elasticity),
 				   boundary{cfg.boundary[0], cfg.boundary[1], cfg.boundary[2], cfg.boundary[3], cfg.boundary[4], cfg.boundary[5]},
 				   num_bodies(cfg.num_bodies),
 				   force{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)},
@@ -150,7 +151,7 @@ void Engine::update(const float dt) {
     float nx = coll.normal.x;
     float ny = coll.normal.y;
     float nz = coll.normal.z;
-    float j = -2.0f * (nx * dvx + ny * dvy + nz * dvz) / ((nx * nx + ny * ny + nz * nz) * ((1.0f / mass1) + (1.0f / mass2)));
+    float j = -(elasticity + 1.0f) * (nx * dvx + ny * dvy + nz * dvz) / ((1.0f / mass1) + (1.0f / mass2));
     float depth = coll.depth * 0.5f;
     pos.x[first] += nx * depth * m2_factor;
     pos.y[first] += ny * depth * m2_factor;
@@ -173,32 +174,32 @@ void Engine::update(const float dt) {
     CollisionResponse resp = colliders[i]->checkCollision(walls[0], get_transform_at(i), Transform{boundary[0], 0.0f, 0.0f});
     if (resp.collides) {
       pos.x[i] += resp.depth;
-      vel.x[i] *= -1;
+      vel.x[i] *= -elasticity;
     }
     resp = colliders[i]->checkCollision(walls[1], get_transform_at(i), Transform{boundary[1], 0.0f, 0.0f});
     if (resp.collides) {
       pos.x[i] -= resp.depth;
-      vel.x[i] *= -1;
+      vel.x[i] *= -elasticity;
     }
     resp = colliders[i]->checkCollision(walls[2], get_transform_at(i), Transform{0.0f, boundary[2], 0.0f});
     if (resp.collides) {
       pos.y[i] += resp.depth;
-      vel.y[i] *= -1;
+      vel.y[i] *= -elasticity;
     }
     resp = colliders[i]->checkCollision(walls[3], get_transform_at(i), Transform{0.0f, boundary[3], 0.0f});
     if (resp.collides) {
       pos.y[i] -= resp.depth;
-      vel.y[i] *= -1;
+      vel.y[i] *= -elasticity;
     }
     resp = colliders[i]->checkCollision(walls[4], get_transform_at(i), Transform{0.0f, 0.0f, boundary[4]});
     if (resp.collides) {
       pos.z[i] += resp.depth;
-      vel.z[i] *= -1;
+      vel.z[i] *= -elasticity;
     }
     resp = colliders[i]->checkCollision(walls[5], get_transform_at(i), Transform{0.0f, 0.0f, boundary[5]});
     if (resp.collides) {
       pos.z[i] -= resp.depth;
-      vel.z[i] *= -1;
+      vel.z[i] *= -elasticity;
     }
   }
 }

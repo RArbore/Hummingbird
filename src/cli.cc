@@ -129,6 +129,8 @@ int Config::initialize() {
 
   if (init_constant(root, "GRAVITY", grav_constant, [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
 
+  if (root["ELASTICITY"].isNumeric()) elasticity = root["ELASTICITY"].as<float>();
+
   if (init_constant(root, "MIN_X", boundary[0], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
   if (init_constant(root, "MAX_X", boundary[1], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
   if (init_constant(root, "MIN_Y", boundary[2], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;

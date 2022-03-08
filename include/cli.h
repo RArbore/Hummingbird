@@ -42,11 +42,12 @@ struct ConfigSphere {
  * spawn in our simulation).
  */
 struct Config {
-  explicit Config(char *json_file_name_i) : json_file_name(json_file_name_i), grav_constant(0.0f), ticks_per_frame(1), num_bodies(0), boundary{} {}
+  explicit Config(char *json_file_name_i) : json_file_name(json_file_name_i), grav_constant(0.0f), elasticity(0.0f), ticks_per_frame(1), num_bodies(0), boundary{} {}
   int process_body(const Json::Value &root);
   int initialize();
   char *json_file_name;
   float grav_constant;
+  float elasticity;
   std::size_t ticks_per_frame;
   std::size_t num_bodies;
   float boundary[6];
