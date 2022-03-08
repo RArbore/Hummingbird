@@ -136,6 +136,37 @@ void Engine::update(const float dt) {
   }
 
   /*
+   * Perform collision detection between bodies.
+   */
+  for (auto [coll, first, second] : collisions) {
+    float mass1 = mass[first];
+    float mass2 = mass[second];
+    float inv_total_mass = 1.0f/ (mass1 + mass2);
+    float m1_factor = mass1 * inv_total_mass;
+    float m2_factor = mass2 * inv_total_mass;
+    float dvx = vel.x[first] - vel.x[second];
+    float dvy = vel.y[first] - vel.y[second];
+    float dvz = vel.z[first] - vel.z[second];
+    float nx = coll.normal.x;
+    float ny = coll.normal.y;
+    float nz = coll.normal.z;
+    float j = -2.0f * (nx * dvx + ny * dvy + nz * dvz) / ((nx * nx + ny * ny + nz * nz) * ((1.0f / mass1) + (1.0f / mass2)));
+    float depth = coll.depth * 0.5f;
+    pos.x[first] += nx * depth * m2_factor;
+    pos.y[first] += ny * depth * m2_factor;
+    pos.z[first] += nz * depth * m2_factor;
+    pos.x[second] -= nx * depth * m1_factor;
+    pos.y[second] -= ny * depth * m1_factor;
+    pos.z[second] -= nz * depth * m1_factor;
+    vel.x[first] += nx * j / mass1;
+    vel.y[first] += ny * j / mass1;
+    vel.z[first] += nz * j / mass1;
+    vel.x[second] -= nx * j / mass2;
+    vel.y[second] -= ny * j / mass2;
+    vel.z[second] -= nz * j / mass2;
+  }
+
+  /*
    * Perform collision detection with walls.
    */
   for (unsigned int i = 0; i < num_bodies; ++i) {

@@ -157,7 +157,6 @@ int Graphics::initialize() {
   glViewport(0, 0, width, height);
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
-  //glEnable(GL_CULL_FACE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   /*
@@ -467,6 +466,7 @@ void Graphics::render_tick(const float dt) {
   const glm::mat4 proj_view = proj * view;
   glUniformMatrix4fv(proj_view_loc, 1, GL_FALSE, glm::value_ptr(proj_view));
 
+  glDisable(GL_CULL_FACE);
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   glBindVertexArray(wallsVAO);
   
@@ -490,6 +490,7 @@ void Graphics::render_tick(const float dt) {
     }
   }
 
+  glEnable(GL_CULL_FACE);
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
   glBindVertexArray(sphereVAO);
 
