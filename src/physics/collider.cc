@@ -46,7 +46,7 @@ CollisionResponse SphereCollider::checkCollision(const WallCollider& other, cons
   result.normal = Transform{other.nx, other.ny, other.nz};
   float sphere_dist = myPos * result.normal;
   float plane_dist = otherPos * result.normal;
-  float dist_diff = plane_dist - sphere_dist;
+  float dist_diff = sphere_dist - plane_dist;
   float radius_div_2 = radius / 2.0f;
   result.collides = dist_diff < radius_div_2;
   if (result.collides) {

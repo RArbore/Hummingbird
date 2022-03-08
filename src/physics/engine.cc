@@ -78,8 +78,8 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
    * Initialize y force vector w/ gravitational 
    * constant.
    */
-  //const __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
-  //multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
+  const __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
+  multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
 }
 
 Engine::~Engine() {
@@ -133,6 +133,42 @@ void Engine::update(const float dt) {
       }
     }
     working_set.clear();
+  }
+
+  /*
+   * Perform collision detection with walls.
+   */
+  for (unsigned int i = 0; i < num_bodies; ++i) {
+    CollisionResponse resp = colliders[i]->checkCollision(walls[0], get_transform_at(i), Transform{boundary[0], 0.0f, 0.0f});
+    if (resp.collides) {
+      pos.x[i] += resp.depth;
+      vel.x[i] *= -1;
+    }
+    resp = colliders[i]->checkCollision(walls[1], get_transform_at(i), Transform{boundary[1], 0.0f, 0.0f});
+    if (resp.collides) {
+      pos.x[i] -= resp.depth;
+      vel.x[i] *= -1;
+    }
+    resp = colliders[i]->checkCollision(walls[2], get_transform_at(i), Transform{0.0f, boundary[2], 0.0f});
+    if (resp.collides) {
+      pos.y[i] += resp.depth;
+      vel.y[i] *= -1;
+    }
+    resp = colliders[i]->checkCollision(walls[3], get_transform_at(i), Transform{0.0f, boundary[3], 0.0f});
+    if (resp.collides) {
+      pos.y[i] -= resp.depth;
+      vel.y[i] *= -1;
+    }
+    resp = colliders[i]->checkCollision(walls[4], get_transform_at(i), Transform{0.0f, 0.0f, boundary[4]});
+    if (resp.collides) {
+      pos.z[i] += resp.depth;
+      vel.z[i] *= -1;
+    }
+    resp = colliders[i]->checkCollision(walls[5], get_transform_at(i), Transform{0.0f, 0.0f, boundary[5]});
+    if (resp.collides) {
+      pos.z[i] -= resp.depth;
+      vel.z[i] *= -1;
+    }
   }
 }
 
