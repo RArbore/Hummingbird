@@ -68,10 +68,17 @@ private:
   std::pair<std::vector<float>, std::vector<unsigned int>> create_icosphere_mesh();
 
   /*
+   * Helpers for initializing meshes.
+   */
+  void initialize_sphere_mesh();
+  void initialize_walls_mesh();
+
+  /*
    * Members representing parts of our OpenGL pipeline.
    * OpenGL represents these objects externally as integers.
    */
-  unsigned int VAO, VBO, EBO;
+  unsigned int sphereVAO, sphereVBO, sphereEBO;
+  unsigned int wallsVAO, wallsVBO, wallsEBO;
   unsigned int vertex_shader, fragment_shader, shader_program;
   int proj_view_loc, model_loc, normal_loc;
 

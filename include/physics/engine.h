@@ -61,6 +61,7 @@ public:
   const std::vector<Quaternion> &get_ang_pos() const;
   const std::vector<std::unique_ptr<Collider>> &get_colliders() const;
   std::size_t get_num_bodies() const;
+  const float* get_boundary() const;
 private:
   /*
    * Constants / configuration.
@@ -78,6 +79,7 @@ private:
   std::vector<float> mass;
   std::vector<Quaternion> ang_pos;
   std::vector<std::unique_ptr<Collider>> colliders;
+  WallCollider walls[6];
 
   omp_lock_t collision_set_lock;
 

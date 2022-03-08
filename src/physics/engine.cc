@@ -31,7 +31,8 @@ static constexpr unsigned int NUM_COLLISION_DETECTION_THREADS = 32;
 Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 				   boundary{cfg.boundary[0], cfg.boundary[1], cfg.boundary[2], cfg.boundary[3], cfg.boundary[4], cfg.boundary[5]},
 				   num_bodies(cfg.num_bodies),
-				   force{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)} {
+				   force{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)},
+				   walls{WallCollider(1.0f, 0.0f, 0.0f), WallCollider(-1.0f, 0.0f, 0.0f), WallCollider(0.0f, 1.0f, 0.0f), WallCollider(0.0f, -1.0f, 0.0f), WallCollider(0.0f, 0.0f, 1.0f), WallCollider(0.0f, 0.0f, -1.0f)} {
   /*
    * Reserve space so  that we don't waste
    * heap allocations.
@@ -95,6 +96,7 @@ const std::vector<float> &Engine::get_mass() const { return mass; }
 const std::vector<Quaternion> &Engine::get_ang_pos() const { return ang_pos; }
 const std::vector<std::unique_ptr<Collider>> &Engine::get_colliders() const { return colliders; }
 std::size_t Engine::get_num_bodies() const { return num_bodies; }
+const float* Engine::get_boundary() const { return boundary; }
 
 void Engine::update(const float dt) {
   /*

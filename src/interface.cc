@@ -157,7 +157,7 @@ int Graphics::initialize() {
   glViewport(0, 0, width, height);
   glEnable(GL_DEPTH_TEST);
   glDepthMask(GL_TRUE);
-  glEnable(GL_CULL_FACE);
+  //glEnable(GL_CULL_FACE);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   /*
@@ -219,51 +219,17 @@ int Graphics::initialize() {
   normal_loc = glGetUniformLocation(shader_program, "normal");
   
   /*
-   * Calculate the mesh for the icosphere.
-   */
-  auto icosphere = create_icosphere_mesh();
-  auto& icosphere_pts = icosphere.first;
-  auto& icosphere_tris = icosphere.second;
-
-  /*
-   * On an icosphere, each point is its own normal.
-   */
-  std::vector<float> icosphere_pts_with_norms;
-  icosphere_pts_with_norms.reserve(icosphere_pts.size());
-  for (std::size_t i = 0; i < icosphere_pts.size(); i += 3) {
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
-      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
-  }
-
-  /*
    * Allocate our caches and create our OpenGL buffers
    * and arrays. These hold information about the various
    * meshes we use in our simulation. Each VAO / VBO / 
    * optionally EBO combo represents a single mesh.
+   * Initialize our meshes.
    */
   model_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
   normal_cache = new glm::mat4[engine.get_num_bodies() + UNIFORM_SIZE];
 
-  glGenVertexArrays(1, &VAO);
-  glBindVertexArray(VAO);
-
-  glGenBuffers(1, &VBO);
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-  glGenBuffers(1, &EBO);
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
-  glEnableVertexAttribArray(0);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
-  glEnableVertexAttribArray(1);
-
-  glBufferData(GL_ARRAY_BUFFER, static_cast<long int>(icosphere_pts_with_norms.size() * sizeof(float)), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
-  glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<long int>(icosphere_tris.size() * sizeof(unsigned int)), icosphere_tris.data(), GL_STATIC_DRAW);
+  initialize_sphere_mesh();
+  initialize_walls_mesh();
 
   return 0;
 }
@@ -384,6 +350,99 @@ std::pair<std::vector<float>, std::vector<unsigned int>> Graphics::create_icosph
 }
 
 /*
+ * Initialize the GL objects for our meshes.
+ */
+void Graphics::initialize_sphere_mesh() {
+  /*
+   * Calculate the mesh for the icosphere.
+   */
+  auto icosphere = create_icosphere_mesh();
+  auto& icosphere_pts = icosphere.first;
+  auto& icosphere_tris = icosphere.second;
+
+  /*
+   * On an icosphere, each point is its own normal.
+   */
+  std::vector<float> icosphere_pts_with_norms;
+  icosphere_pts_with_norms.reserve(icosphere_pts.size());
+  for (std::size_t i = 0; i < icosphere_pts.size(); i += 3) {
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+1));
+      icosphere_pts_with_norms.push_back(icosphere_pts.at(i+2));
+  }
+
+  glGenVertexArrays(1, &sphereVAO);
+  glBindVertexArray(sphereVAO);
+
+  glGenBuffers(1, &sphereVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, sphereVBO);
+
+  glGenBuffers(1, &sphereEBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, sphereEBO);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
+  glBufferData(GL_ARRAY_BUFFER, static_cast<long int>(icosphere_pts_with_norms.size() * sizeof(float)), icosphere_pts_with_norms.data(), GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<long int>(icosphere_tris.size() * sizeof(unsigned int)), icosphere_tris.data(), GL_STATIC_DRAW);
+}
+
+void Graphics::initialize_walls_mesh() {
+  auto boundary = engine.get_boundary();
+  float inv_sqrt_3 = 1.0f / sqrt(3.0f);
+  
+  float vertices[16][3] = {
+    {boundary[0], boundary[2], boundary[4]},
+    {-inv_sqrt_3, -inv_sqrt_3, -inv_sqrt_3},
+    {boundary[1], boundary[2], boundary[4]},
+    {inv_sqrt_3, -inv_sqrt_3, -inv_sqrt_3},
+    {boundary[0], boundary[3], boundary[4]},
+    {-inv_sqrt_3, inv_sqrt_3, -inv_sqrt_3},
+    {boundary[1], boundary[3], boundary[4]},
+    {inv_sqrt_3, inv_sqrt_3, -inv_sqrt_3},
+    {boundary[0], boundary[2], boundary[5]},
+    {-inv_sqrt_3, -inv_sqrt_3, inv_sqrt_3},
+    {boundary[1], boundary[2], boundary[5]},
+    {inv_sqrt_3, -inv_sqrt_3, inv_sqrt_3},
+    {boundary[0], boundary[3], boundary[5]},
+    {-inv_sqrt_3, inv_sqrt_3, inv_sqrt_3},
+    {boundary[1], boundary[3], boundary[5]},
+    {inv_sqrt_3, inv_sqrt_3, inv_sqrt_3},
+  };
+
+  unsigned int quads[6][4] = {
+    {0, 1, 3, 2},
+    {4, 5, 7, 6},
+    {0, 1, 5, 4},
+    {2, 3, 7, 6},
+    {0, 2, 6, 4},
+    {1, 3, 7, 5},
+  };
+  
+  glGenVertexArrays(1, &wallsVAO);
+  glBindVertexArray(wallsVAO);
+
+  glGenBuffers(1, &wallsVBO);
+  glBindBuffer(GL_ARRAY_BUFFER, wallsVBO);
+
+  glGenBuffers(1, &wallsEBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, wallsEBO);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), nullptr);
+  glEnableVertexAttribArray(0);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), reinterpret_cast<void*>(3 * sizeof(float)));
+  glEnableVertexAttribArray(1);
+
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quads), quads, GL_STATIC_DRAW);
+}
+
+/*
  * Render tick function that occurs every frame. First,
  * we handle user input. Then, we clear the screen buffer.
  * Next, we calculate various matrices / vectors related
@@ -406,6 +465,16 @@ void Graphics::render_tick(const float dt) {
   const glm::vec3 cpos = glm::vec3(cx, cy, cz);
   const glm::mat4 view = glm::lookAt(cpos, cpos + cdir, cup);
   const glm::mat4 proj_view = proj * view;
+  glUniformMatrix4fv(proj_view_loc, 1, GL_FALSE, glm::value_ptr(proj_view));
+
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+  glBindVertexArray(wallsVAO);
+  
+  model_cache[0] = identity;
+  normal_cache[0] = identity;
+  glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model_cache[0]));
+  glUniformMatrix4fv(normal_loc, 1, GL_FALSE, glm::value_ptr(normal_cache[0]));
+  glDrawElements(GL_QUADS, 24, GL_UNSIGNED_INT, 0);
 
 #pragma omp parallel for
   for (std::size_t i = 0; i < engine.get_num_bodies(); ++i) {
@@ -421,7 +490,9 @@ void Graphics::render_tick(const float dt) {
     }
   }
 
-  glUniformMatrix4fv(proj_view_loc, 1, GL_FALSE, glm::value_ptr(proj_view));
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  glBindVertexArray(sphereVAO);
+
   std::size_t i = 0;
   if (engine.get_num_bodies() >= UNIFORM_SIZE) {
     for (; i <= engine.get_num_bodies() - UNIFORM_SIZE; i += UNIFORM_SIZE) {
@@ -435,7 +506,7 @@ void Graphics::render_tick(const float dt) {
     glUniformMatrix4fv(normal_loc, 1, GL_FALSE, glm::value_ptr(normal_cache[i]));
     glDrawElements(GL_TRIANGLES, static_cast<int>(num_tris * 3), GL_UNSIGNED_INT, 0);
   }
-  
+
   glfwSwapBuffers(window);
   resized = false;
 }
