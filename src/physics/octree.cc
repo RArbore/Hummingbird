@@ -30,18 +30,39 @@ void Octree::insert(const unsigned int to_store, const AABB& aabb) {
 }
 
 void Octree::insert(const unsigned int to_store, const AABB& aabb, const unsigned int root, const AABB& node_aabb) {
+  /*
+   * Only insert if body is in tree node.
+   */
   if (!intersects(aabb, node_aabb)) return;
+
+  /*
+   * Only insert in current node if there's
+   * space.
+   */
   auto& node = nodes[root];
   if (node.num_stored < NODE_SIZE) {
     node.bodies[node.num_stored++] = to_store;
     return;
   }
+
+  /*
+   * If we haven't already created the current
+   * node's children, create them. When we add
+   * nodes to the tree's vector, we 
+   * potentially invalidate the node reference,
+   * as insertions may result in re-allocations.
+   */
   unsigned int first_child = node.first_child;
   if (!node.first_child) {
     first_child = static_cast<unsigned int>(nodes.size());
     node.first_child = first_child;
     for (unsigned int i = 0; i < 8; ++i) nodes.emplace_back(); // Reference node is invalid after this point
   }
+
+  /*
+   * Attempt to insert into all children that
+   * we overlap.
+   */
   insert(to_store, aabb, first_child, get_sub_aabb<false, false, false>(node_aabb));
   insert(to_store, aabb, first_child + 1, get_sub_aabb<true, false, false>(node_aabb));
   insert(to_store, aabb, first_child + 2, get_sub_aabb<false, true, false>(node_aabb));
@@ -66,12 +87,30 @@ void Octree::possibilities(const unsigned int id, const AABB& aabb, std::unorder
 }
 
 void Octree::possibilities(const unsigned int id, const AABB& aabb, std::unordered_set<unsigned int>& dest, const unsigned int root, const AABB& node_aabb) {
+  /*
+   * If we don't intersect the body's
+   * AABB, we know we're done.
+   */
   if (!intersects(aabb, node_aabb)) return;
+
+  /*
+   * Add bodies from current node to
+   * the vector of possible collisions.
+   * We only allow collisions with bodies
+   * whose ID is larger than the query.
+   * This is an easy way to avoid double
+   * counting collisions.
+   */
   auto& node = nodes[root];
   for (unsigned int i = 0; i < node.num_stored; ++i) {
     auto body = node.bodies[i];
     if (id < body) dest.insert(body);
   }
+
+  /*
+   * If we have children, we must query
+   * them too.
+   */
   unsigned int first_child = node.first_child;
   if (first_child) {
     possibilities(id, aabb, dest, first_child, get_sub_aabb<false, false, false>(node_aabb));
