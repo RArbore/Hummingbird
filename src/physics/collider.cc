@@ -35,8 +35,9 @@ CollisionResponse SphereCollider::checkCollision(const SphereCollider& other, co
   float depth2 = BmA * BmA;
   result.collides = depth2 <= (radius + other.radius) * (radius + other.radius);
   if (result.collides) {
-    result.depth = sqrt(BmA * BmA);
-    result.normal = BmA / result.depth;
+    float sqrt_depth2 = sqrt(depth2);
+    result.depth = radius + other.radius - sqrt_depth2;
+    result.normal = BmA / sqrt_depth2;
   }
   return result;
 }
