@@ -67,7 +67,7 @@ TEST_CASE("Two sphere collides test","[SphereCollider]"){
     Transform pos1 {30.0f, 60.0f, 90.0f};
     Transform pos2 {37.0f, 84.0f, 150.0f};
     CollisionResponse response = collider1.checkCollision(collider2, pos1, pos2);
-    REQUIRE(!response.collides);
+    REQUIRE(response.collides);
 }
 
 TEST_CASE("Two sphere collide edge case","[SphereCollider]"){
