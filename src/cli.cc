@@ -131,6 +131,8 @@ int Config::initialize() {
 
   if (root["ELASTICITY"].isNumeric()) elasticity = root["ELASTICITY"].as<float>();
 
+  if (root["SPEED"].isNumeric()) speed = root["SPEED"].as<float>();
+
   if (init_constant(root, "MIN_X", boundary[0], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
   if (init_constant(root, "MAX_X", boundary[1], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;
   if (init_constant(root, "MIN_Y", boundary[2], [](const Json::Value &jv) { return jv.isNumeric(); })) return -1;

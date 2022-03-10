@@ -58,7 +58,7 @@ int main(int argc, char **argv) {
     before = micro_sec();
     
     for (std::size_t i = 0; i < config.ticks_per_frame; ++i)
-      engine.update(dt / ticks_per_frame);
+      engine.update(config.speed * dt / ticks_per_frame);
     graphics.render_tick(dt);
 
     after = micro_sec();

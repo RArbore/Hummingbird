@@ -2,6 +2,7 @@
     "GRAVITY" : 10.0,
     "TICKS_PER_FRAME" : 1,
     "ELASTICITY" : 0.8,
+    "SPEED": 2.0,
     "MIN_X" : 0.0,
     "MAX_X" : 100.0,
     "MIN_Y" : 0.0,
