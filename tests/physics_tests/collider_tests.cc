@@ -62,7 +62,7 @@ TEST_CASE("Two sphere collide edge case","[SphereCollider]"){
             4.0f / 13.0f,
             12.0f / 13.0f    
         },
-        13.0f,
+        0.0f,
         true,
     };
     REQUIRE_SAME_RESPONSE(response, expected_response);
@@ -82,7 +82,52 @@ TEST_CASE("Two sphere collide case","[SphereCollider]"){
             4.0f / 12.083045974f,
             11.0f / 12.083045974f    
         },
-        12.083045974f,
+        0.116954026f,
+        true,
+    };
+    REQUIRE_SAME_RESPONSE(response, expected_response);
+}
+
+TEST_CASE("Sphere and wall no collide","[WallCollider]"){
+    SphereCollider collider1(2.0f);
+    WallCollider collider2(0.707106781f, 0.707106781f, 0.0f);
+    Transform pos1 {2.0f, 2.0f, 2.0f};
+    Transform pos2 {0.0f, 0.0f, 0.0f};
+    CollisionResponse response = collider1.checkCollision(collider2, pos1, pos2);
+    REQUIRE(!response.collides);
+}
+
+TEST_CASE("Sphere and wall collide edge case","[WallCollider]"){
+    SphereCollider collider1(2.0f);
+    WallCollider collider2(1.0f, 0.0f, 0.0f);
+    Transform pos1 {2.0f, 0.0f, 0.0f};
+    Transform pos2 {0.0f, 0.0f, 0.0f};
+    CollisionResponse response = collider1.checkCollision(collider2, pos1, pos2);
+    CollisionResponse expected_response {
+        {
+            1.0f,
+            0.0f,
+            0.0f    
+        },
+        0.0f,
+        true,
+    };
+    REQUIRE_SAME_RESPONSE(response, expected_response);
+}
+
+TEST_CASE("Sphere and wall collides test","[WallCollider]"){
+    SphereCollider collider1(2.0f);
+    WallCollider collider2(1.0f, 0.0f, 0.0f);
+    Transform pos1 {1.0f, 0.0f, 0.0f};
+    Transform pos2 {0.0f, 0.0f, 0.0f};
+    CollisionResponse response = collider1.checkCollision(collider2, pos1, pos2);
+    CollisionResponse expected_response {
+        {
+            1.0f,
+            0.0f,
+            0.0f    
+        },
+        1.0f,
         true,
     };
     REQUIRE_SAME_RESPONSE(response, expected_response);
