@@ -15,7 +15,8 @@
 
 #include "../../include/physics/quaternion.h"
 
-void smallDiff(float f1, float f2) {
+bool smallDiff(float f1, float f2);
+bool smallDiff(float f1, float f2) {
   float k = f1 - f2;
   if ((-0.01 < k) && (k < 0.01)) {
     return true;
