@@ -21,7 +21,7 @@
  * body-specific complexity after querying
  * possible collisions.
  */
-static constexpr unsigned int NODE_SIZE = 64;
+static constexpr unsigned int NODE_SIZE = 16;
 
 struct AABB {
   float x1, x2, y1, y2, z1, z2;
@@ -59,7 +59,7 @@ public:
 
 private:
   struct Node {
-    Node(): num_stored(0), first_child(0), bodies{0, 0, 0, 0, 0, 0, 0, 0} {}
+    Node(): num_stored(0), first_child(0), bodies{} {}
     unsigned int num_stored;
     unsigned int first_child;
     unsigned int bodies[NODE_SIZE]; 
