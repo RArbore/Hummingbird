@@ -86,6 +86,10 @@ private:
   Transform get_transform_at(const std::size_t i);
   AABB get_aabb_at(const std::size_t i);
   void dynamics_update(const float dt);
+  std::unique_ptr<Octree> make_octree();
+  std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>> find_collisions(const std::unique_ptr<Octree> octree);
+  void collision_response(const std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>>& collisions);
+  void collision_response_with_walls();
 
   /*
    * Utility functions for performing vector operations.

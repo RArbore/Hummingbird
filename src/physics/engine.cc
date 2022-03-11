@@ -100,23 +100,55 @@ std::size_t Engine::get_num_bodies() const { return num_bodies; }
 const float* Engine::get_boundary() const { return boundary; }
 
 void Engine::update(const float dt) {
-  /*
-   * Update positions / velocities / forces of 
-   * bodies.
-   */
   dynamics_update(dt);
+  auto octree = make_octree();
+  auto collisions = find_collisions(std::move(octree));
+  collision_response(collisions);
+  collision_response_with_walls();
+}
+
+/*
+ * Update positions / velocities / forces of 
+ * bodies.
+ */
+void Engine::dynamics_update(const float dt) {
+  /*
+   * Initialize vector register filled with
+   * dt, so that we can avoid reallocating
+   * it for each operation.
+   */
+  const __m256 dt_a = _mm256_set_ps(dt, dt, dt, dt, dt, dt, dt, dt);
 
   /*
-   * Construct octree for collision detection.
+   * Update velocities from forces.
    */
+  fused_multiply_add_with_mass(dt, dt_a, vel.x.data(), force.x.data(), mass.data());
+  fused_multiply_add_with_mass(dt, dt_a, vel.y.data(), force.y.data(), mass.data());
+  fused_multiply_add_with_mass(dt, dt_a, vel.z.data(), force.z.data(), mass.data());
+
+  /*
+   * Update positions from velocities.
+   */
+  fused_multiply_add(dt, dt_a, pos.x.data(), vel.x.data());
+  fused_multiply_add(dt, dt_a, pos.y.data(), vel.y.data());
+  fused_multiply_add(dt, dt_a, pos.z.data(), vel.z.data());
+}
+
+/*
+ * Construct octree for collision detection.
+ */
+std::unique_ptr<Octree> Engine::make_octree() {
   auto octree = std::make_unique<Octree>(*reinterpret_cast<AABB*>(boundary));
   for (unsigned int i = 0; i < num_bodies; ++i) {
     octree->insert(i, get_aabb_at(i));
   }
+  return octree;
+}
 
-  /*
-   * Perform collision detection.
-   */
+/*
+ * Perform collision detection.
+ */
+std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>> Engine::find_collisions(const std::unique_ptr<Octree> octree) {
   std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>> collisions;
   std::unordered_set<unsigned int> working_sets[NUM_COLLISION_DETECTION_THREADS];
 #pragma omp parallel for num_threads(NUM_COLLISION_DETECTION_THREADS) 
@@ -135,10 +167,13 @@ void Engine::update(const float dt) {
     }
     working_set.clear();
   }
+  return collisions;
+}
 
-  /*
-   * Perform collision detection between bodies.
-   */
+/*
+ * Perform collision detection between bodies.
+ */
+void Engine::collision_response(const std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>>& collisions) {
   for (auto [coll, first, second] : collisions) {
     float mass1 = mass[first];
     float mass2 = mass[second];
@@ -165,10 +200,12 @@ void Engine::update(const float dt) {
     vel.y[second] -= ny * j / mass2;
     vel.z[second] -= nz * j / mass2;
   }
+}
 
-  /*
-   * Perform collision detection with walls.
-   */
+/*
+ * Perform collision detection with walls.
+ */
+void Engine::collision_response_with_walls() {
   for (unsigned int i = 0; i < num_bodies; ++i) {
     CollisionResponse resp = colliders[i]->checkCollision(walls[0], get_transform_at(i), Transform{boundary[0], 0.0f, 0.0f});
     if (resp.collides) {
@@ -201,29 +238,6 @@ void Engine::update(const float dt) {
       vel.z[i] *= -elasticity;
     }
   }
-}
-
-void Engine::dynamics_update(const float dt) {
-  /*
-   * Initialize vector register filled with
-   * dt, so that we can avoid reallocating
-   * it for each operation.
-   */
-  const __m256 dt_a = _mm256_set_ps(dt, dt, dt, dt, dt, dt, dt, dt);
-
-  /*
-   * Update velocities from forces.
-   */
-  fused_multiply_add_with_mass(dt, dt_a, vel.x.data(), force.x.data(), mass.data());
-  fused_multiply_add_with_mass(dt, dt_a, vel.y.data(), force.y.data(), mass.data());
-  fused_multiply_add_with_mass(dt, dt_a, vel.z.data(), force.z.data(), mass.data());
-
-  /*
-   * Update positions from velocities.
-   */
-  fused_multiply_add(dt, dt_a, pos.x.data(), vel.x.data());
-  fused_multiply_add(dt, dt_a, pos.y.data(), vel.y.data());
-  fused_multiply_add(dt, dt_a, pos.z.data(), vel.z.data());
 }
 
 /*
