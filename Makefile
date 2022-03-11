@@ -20,7 +20,7 @@ W_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wd
 
 CXX_FLAGS=-std=c++17 -Ofast -fopenmp -mavx -march=native -Iinclude $(W_FLAGS)
 
-L_FLAGS=-L/usr/lib/x86_64-linux-gnu -lglfw -lGL -ljsoncpp -fopenmp
+L_FLAGS=-L/usr/lib/x86_64-linux-gnu -lglfw -lGL -ljsoncpp -fopenmp -flto
 
 hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/quaternion.o build/octree.o build/vertex.o build/fragment.o
 	$(LD) -o $@ $^ $(L_FLAGS)
