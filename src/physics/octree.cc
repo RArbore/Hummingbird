@@ -12,10 +12,11 @@
 
 #include <physics/octree.h>
 
-bool intersects(const AABB& aabb1, const AABB& aabb2) {
-  return aabb1.x1 <= aabb2.x2 && aabb2.x1 <= aabb1.x2
-    && aabb1.y1 <= aabb2.y2 && aabb2.y1 <= aabb1.y2
-    && aabb1.z1 <= aabb2.z2 && aabb2.z1 <= aabb1.z2;
+__attribute__((always_inline))
+inline bool intersects(const AABB& aabb1, const AABB& aabb2) {
+  return (aabb1.x1 <= aabb2.x2) & (aabb2.x1 <= aabb1.x2)
+    & (aabb1.y1 <= aabb2.y2) & (aabb2.y1 <= aabb1.y2)
+    & (aabb1.z1 <= aabb2.z2) & (aabb2.z1 <= aabb1.z2);
 }
 
 Octree::Octree(const AABB& aabb): root_bound(aabb), nodes(1) {}

@@ -27,8 +27,6 @@ struct AABB {
   float x1, x2, y1, y2, z1, z2;
 };
 
-bool intersects(const AABB& aabb1, const AABB& aabb2);
-
 /*
  * Get child AABB, splitting parent AABB
  * into eight pieces.
