@@ -100,6 +100,7 @@ std::size_t Engine::get_num_bodies() const { return num_bodies; }
 const float* Engine::get_boundary() const { return boundary; }
 
 void Engine::update(const float dt) {
+  if (paused) return;
   dynamics_update(dt);
   auto octree = make_octree();
   auto collisions = find_collisions(std::move(octree));

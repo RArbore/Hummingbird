@@ -54,6 +54,8 @@ public:
     std::vector<T, boost::alignment::aligned_allocator<T, align>> z;
   };
 
+  bool paused = false;
+
   const Vec3x<float, 32> &get_pos() const;
   const Vec3x<float, 32> &get_vel() const;
   const Vec3x<float, 32> &get_force() const;

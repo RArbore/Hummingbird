@@ -49,14 +49,14 @@ void resize_callback(GLFWwindow* window, int width, int height);
  */
 class Graphics {
 public:
-  explicit Graphics(const Engine &engine_i);
+  explicit Graphics(Engine &engine_i);
   ~Graphics();
   int initialize();
   void render_tick(const float dt);
   bool should_close() const;
 private:
   GLFWwindow *window;
-  const Engine &engine;
+  Engine &engine;
 
   /*
    * Part of our initialization is creating an icosphere
@@ -102,5 +102,7 @@ private:
    * Camera position & rotation.
    */
   float cx, cy, cz, cphi, ctheta;
+
+  bool released_enter = true;
   void handle_input(float dt);
 };

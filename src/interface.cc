@@ -106,7 +106,7 @@ static constexpr float SENSITIVITY = 1.0f;
  * Graphics constructor. Dead simple since actual
  * initialization happens in initialize.
  */
-Graphics::Graphics(const Engine &engine_i): window(nullptr), engine(engine_i), identity(1.0f),
+Graphics::Graphics(Engine &engine_i): window(nullptr), engine(engine_i), identity(1.0f),
 					    cup(0.0f, 1.0f, 0.0f), cx(0.0f), cy(0.0f), cz(0.0f), cphi(0.0f), ctheta(0.0f) {}
 
 Graphics::~Graphics() {
@@ -541,6 +541,13 @@ void Graphics::handle_input(float dt) {
   }
   if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
     cy -= MOVE_SPEED * dt;
+  }
+  if (glfwGetKey(window, GLFW_KEY_ENTER) && released_enter) {
+    engine.paused = !engine.paused;
+    released_enter = false;
+  }
+  else if (!glfwGetKey(window, GLFW_KEY_ENTER)) {
+    released_enter = true;
   }
 
   if (mouse_moved && !first_mouse) {
