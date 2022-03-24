@@ -17,6 +17,7 @@
 #include <physics/engine.h>
 #include <interface.h>
 #include <cli.h>
+#include <playback.h>
 
 /*
  * Get the current Unix time in microseconds.
@@ -26,20 +27,52 @@ inline unsigned long long micro_sec() {
     return static_cast<unsigned long long>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count());
 }
 
+int runEngine(int argc, char **argv, bool record); 
+int runPlayback(int argc, char **argv); 
+
+/**
+ * Entry point for the program. 
+ * Handles the flags for what to eventually run. 
+ */
+int main(int argc, char **argv) {
+  if (argc != 2 && argc != 3) {
+    std::cerr << "Usage: " << argv[0] << "<json_file> (use -h for help)" << std::endl;
+    return -1;
+  }
+  if(argc == 2) {
+    if(strcmp(argv[1], "-h") == 0) { // help flag
+      std::cout << "Usage: " << argv[0] << " [flags] <json_file>" << std::endl; 
+      std::cout << "Flags:\n-h\t help" << std::endl; 
+      std::cout << "-p \t playback from provided json_file" << std::endl; 
+      std::cout << "-r \t record simulation" << std::endl; 
+      return 0; 
+    }
+    return runEngine(argc, argv, false); 
+  }
+
+  // argc == 3
+  if(strcmp(argv[1], "-p") == 0) { // playback flag
+    return runPlayback(argc, argv); 
+  } else if(strcmp(argv[1], "-r") == 0) { // record flag
+    return runEngine(argc, argv, true); 
+  } else {
+    std::cout << "Flag usage: " << argv[0] << " -[p/r] <json_file>" << std::endl; 
+    return -1; 
+  }
+
+  return 0; 
+}
+
 /*
- * Entry point for our program. Initialize a config,
- * our engine, and a graphics context. Updates the
- * N times per frame, according to user configuration.
+ * Initialize a config, our engine,
+ * and a graphics context. Updates the N times
+ * per frame, according to user configuration.
  * We use return codes for error handling - if an error
  * happens, a message is printed to stderr at the error
  * site, and -1 is returned up the stack.
+ * We also decide whether or not to record based on the boolean. 
  */
-int main(int argc, char **argv) {
-  if (argc != 2) {
-    std::cerr << "Usage: " << argv[0] << " <json_file>" << std::endl;
-    return -1;
-  }
-
+int runEngine(int argc, char **argv, bool record) {
   srand(static_cast<unsigned int>(micro_sec()));
 
   Config config(argv[1]);
@@ -71,6 +104,10 @@ int main(int argc, char **argv) {
     dt = static_cast<float>(after - before) / 1000000.0f;
     std::cout << "FPS: " << 1. / dt << '\n';
   }
+  return 0; 
+}
 
-  return 0;
+int runPlayback(int argc, char **argv) {
+
+  return 0; 
 }

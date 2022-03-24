@@ -313,3 +313,30 @@ AABB Engine::get_aabb_at(const std::size_t i) {
   }
   else return AABB{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 }
+
+void Engine::save_to_file(std::ofstream stream) const{
+  for (size_t i = 0; i < num_bodies; i++){
+    float pos_x = pos.x[i];
+    float pos_y = pos.y[i];
+    float pos_z = pos.z[i];
+    stream.write(reinterpret_cast<char*> (&pos_x), sizeof(pos_x));
+    stream.write(reinterpret_cast<char*> (&pos_y), sizeof(pos_y));
+    stream.write(reinterpret_cast<char*> (&pos_z), sizeof(pos_z));
+  }
+}
+
+Engine::Vec3x<float, 32> Engine::read_from_file(std::ifstream stream) const{
+    Vec3x<float, 32> result;
+    while (!stream.eof()){
+      float pos_x = 0;
+      float pos_y = 0;
+      float pos_z = 0;
+      stream.read(reinterpret_cast<char*> (&pos_x), sizeof(pos_x));
+      stream.read(reinterpret_cast<char*> (&pos_y), sizeof(pos_y));
+      stream.read(reinterpret_cast<char*> (&pos_z), sizeof(pos_z));
+      result.x.push_back(pos_x);
+      result.y.push_back(pos_y);
+      result.z.push_back(pos_z);
+    }
+    return result;
+  }
