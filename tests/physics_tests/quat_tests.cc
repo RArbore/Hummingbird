@@ -40,6 +40,22 @@ TEST_CASE("Quaternion Constructor with values 2", "[quaternion]") {
   REQUIRE(q.z == 8.0f); 
 }
 
+TEST_CASE("Quaternion Constructor with values 3", "[quaternion]") {
+  Quaternion q = {32.0f, 19.0f, 101.0f, 37.0f}; 
+  REQUIRE(q.w == 32.0f); 
+  REQUIRE(q.x == 19.0f); 
+  REQUIRE(q.y == 101.0f); 
+  REQUIRE(q.z == 37.0f); 
+}
+
+TEST_CASE("Quaternion Constructor with values 4", "[quaternion]") {
+  Quaternion q = {5.0f, 39.0f, 2.0f, 17.0f}; 
+  REQUIRE(q.w == 5.0f); 
+  REQUIRE(q.x == 39.0f); 
+  REQUIRE(q.y == 2.0f); 
+  REQUIRE(q.z == 17.0f); 
+}
+
 TEST_CASE("Quaternion Empty Constructor", "[quaternion]") {
   Quaternion q; 
   REQUIRE(q.w == 0.0f); 
