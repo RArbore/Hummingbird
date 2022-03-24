@@ -42,8 +42,10 @@ build/vertex.o: shaders/vertex.glsl
 	objcopy --input binary --output elf64-x86-64 $< $@
 build/fragment.o: shaders/fragment.glsl
 	objcopy --input binary --output elf64-x86-64 $< $@
+build/playback.o: src/playback.cc include/playback.h
+	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 
-test: build/cli.o build/quattests.o build/tests.o build/quaternion.o build/collidertests.o build/collider.o
+test: build/cli.o build/quattests.o build/tests.o build/quaternion.o build/collidertests.o build/collider.o build/playback.o build/serializationtest.o
 	$(LD) $(L_FLAGS) -o $@ $^
 build/tests.o: tests/cli_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
@@ -51,6 +53,9 @@ build/quattests.o: tests/physics_tests/quat_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
 build/collidertests.o: tests/physics_tests/collider_tests.cc
+	$(CXX) $(CXX_FLAGS) -c $^ -o $@
+
+build/serializationtest.o: tests/physics_tests/serialization_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
 exe: hummingbird

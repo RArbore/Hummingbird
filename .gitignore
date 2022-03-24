@@ -10,3 +10,6 @@ test
 
 # perf data
 perf*
+
+# record data
+*.txt
