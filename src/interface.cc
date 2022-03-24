@@ -50,7 +50,6 @@ static float last_x = 0.0f, last_y = 0.0f, recent_x = 0.0f, recent_y = 0.0f;
  * create a sphere mesh.
  */
 static constexpr float golden_ratio = 1.6180339887f;
-static constexpr float inv_golden_ratio = 1.0f / golden_ratio;
 static constexpr float icosphere_base_pts[12][3] = {
   {-1.0f, golden_ratio, 0.0f},
   {1.0f, golden_ratio, 0.0f},

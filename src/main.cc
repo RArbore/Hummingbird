@@ -50,6 +50,12 @@ int main(int argc, char **argv) {
   Graphics graphics(engine);
   if (graphics.initialize()) return -1;
   
+  /*
+   * We track the frametime to keep consistent physics.
+   * If we multiply physics updates by the delta time,
+   * we can achieve a smooth animation while running at
+   * an uncapped framerate.
+   */
   float dt = 0., ticks_per_frame = static_cast<float>(config.ticks_per_frame);
 
   unsigned long long before = 0, after = 0;
