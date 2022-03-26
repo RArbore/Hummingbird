@@ -1,28 +1,15 @@
 #include "playback.h"
 
-void save_to_file(std::ofstream &stream, size_t num, Engine::Vec3x<float, 32> position){
-  for (size_t i = 0; i < num; i++){
-    float pos_x = position.x[i];
-    float pos_y = position.y[i];
-    float pos_z = position.z[i];
-    stream.write(reinterpret_cast<char*> (&pos_x), sizeof(pos_x));
-    stream.write(reinterpret_cast<char*> (&pos_y), sizeof(pos_y));
-    stream.write(reinterpret_cast<char*> (&pos_z), sizeof(pos_z));
-  }
+void dump_to_file(std::ofstream &stream, const Engine& engine) {
+  auto pos = engine.get_pos();
+  stream.write(reinterpret_cast<const char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
+  stream.write(reinterpret_cast<const char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
+  stream.write(reinterpret_cast<const char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
 }
 
-Engine::Vec3x<float, 32> read_from_file(std::ifstream &stream){
-    Engine::Vec3x<float, 32> result;
-    while (!stream.eof()){
-      float pos_x = 0;
-      float pos_y = 0;
-      float pos_z = 0;
-      stream.read(reinterpret_cast<char*> (&pos_x), sizeof(pos_x));
-      stream.read(reinterpret_cast<char*> (&pos_y), sizeof(pos_y));
-      stream.read(reinterpret_cast<char*> (&pos_z), sizeof(pos_z));
-      result.x.push_back(pos_x);
-      result.y.push_back(pos_y);
-      result.z.push_back(pos_z);
-    }
-    return result;
-  }
+void load_from_file(std::ifstream &stream, Engine& engine) {
+  auto pos = engine.get_pos();
+  stream.read(reinterpret_cast<char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
+  stream.read(reinterpret_cast<char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
+  stream.read(reinterpret_cast<char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
+}
