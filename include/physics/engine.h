@@ -65,6 +65,9 @@ public:
   const std::vector<std::unique_ptr<Collider>> &get_colliders() const;
   std::size_t get_num_bodies() const;
   const float* get_boundary() const;
+
+  friend void dump_init_to_file(std::ofstream &stream, const Engine& engine);
+  friend void load_init_from_file(std::ifstream &stream, Engine& engine);
 private:
   /*
    * Constants / configuration.

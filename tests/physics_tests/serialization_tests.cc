@@ -34,12 +34,12 @@ TEST_CASE("Serialization and deserialization test", "[engine]") {
 
   {
     std::ofstream outfile("binary.txt", std::ofstream::binary);
-    dump_to_file(outfile, engine_src);
+    dump_tick_to_file(outfile, engine_src);
   }
   
   {
     std::ifstream infile("binary.txt", std::ifstream::binary);
-    load_from_file(infile, engine_dst);
+    load_tick_from_file(infile, engine_dst);
   }
 
   for (i = 0; i < config.num_bodies; ++i) {
