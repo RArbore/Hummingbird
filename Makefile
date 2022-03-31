@@ -20,7 +20,7 @@ W_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wd
 
 CXX_FLAGS=-std=c++17 -Ofast -flto -fno-signed-zeros -fno-trapping-math -frename-registers -funroll-loops -fopenmp -D_GLIBCXX_PARALLEL -mavx -march=native -Iinclude $(W_FLAGS)
 
-COV_FLAGS=-std=c++17 -g -Iinclude $(W_FLAGS) --coverage
+COV_FLAGS=$(CXX_FLAGS) --coverage
 
 L_FLAGS=-L/usr/lib/x86_64-linux-gnu -lglfw -lGL -ljsoncpp -fopenmp -flto
 
@@ -92,6 +92,7 @@ exe_test: test
 	./test
 clean:
 	rm -rf build/*.o
+	rm -rf build/coverage/*.o
 	rm -rf hummingbird
 	rm -rf test
 
