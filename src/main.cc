@@ -64,13 +64,13 @@ int main(int argc, char **argv) {
 }
 
 /*
- * Initialize a config, our engine,
- * and a graphics context. Updates the N times
- * per frame, according to user configuration.
- * We use return codes for error handling - if an error
- * happens, a message is printed to stderr at the error
- * site, and -1 is returned up the stack.
- * We also decide whether or not to record based on the boolean. 
+ * Initialize a config, our engine, and a graphics 
+ * context. Updates the N times per frame, according 
+ * to user configuration. We use return codes for 
+ * error handling - if an error happens, a message 
+ * is printed to stderr at the error site, and -1 
+ * is returned up the stack. We also decide whether 
+ * or not to record based on a boolean input. 
  */
 int runEngine(int argc, char **argv, bool record) {
   srand(static_cast<unsigned int>(micro_sec()));

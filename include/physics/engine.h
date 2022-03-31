@@ -18,6 +18,7 @@
 #include <vector>
 #include <memory>
 #include <tuple>
+#include <iostream>
 
 #include <boost/align/aligned_allocator.hpp>
 
@@ -64,8 +65,9 @@ public:
   const std::vector<std::unique_ptr<Collider>> &get_colliders() const;
   std::size_t get_num_bodies() const;
   const float* get_boundary() const;
-  void save_to_file(std::ofstream stream) const;
-  Vec3x<float, 32> read_from_file(std::ifstream stream) const;
+
+  friend void dump_init_to_file(std::ofstream &stream, const Engine& engine);
+  friend void load_init_from_file(std::ifstream &stream, Engine& engine);
 private:
   /*
    * Constants / configuration.

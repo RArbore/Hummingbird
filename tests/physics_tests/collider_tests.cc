@@ -120,7 +120,7 @@ TEST_CASE("Sphere and wall no collide","[WallCollider]"){
 }
 
 TEST_CASE("Sphere and wall collide edge case","[WallCollider]"){
-    SphereCollider collider1(2.0f);
+    SphereCollider collider1(2.05f);
     WallCollider collider2(1.0f, 0.0f, 0.0f);
     Transform pos1 {2.0f, 0.0f, 0.0f};
     Transform pos2 {0.0f, 0.0f, 0.0f};
@@ -131,7 +131,7 @@ TEST_CASE("Sphere and wall collide edge case","[WallCollider]"){
             0.0f,
             0.0f    
         },
-        0.0f,
+        0.05f,
         true,
     };
     REQUIRE_SAME_RESPONSE(response, expected_response);
