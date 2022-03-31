@@ -26,52 +26,62 @@ bool smallDiff(float f1, float f2) {
 
 TEST_CASE("Quaternion Constructor with values 1", "[quaternion]") {
   Quaternion q = {3.0f, 1.0f, 1.0f, 1.0f}; 
-  REQUIRE(q.w == 3.0f); 
-  REQUIRE(q.x == 1.0f); 
-  REQUIRE(q.y == 1.0f); 
-  REQUIRE(q.z == 1.0f); 
+  REQUIRE(smallDiff(q.w, 3.0f)); 
+  REQUIRE(smallDiff(q.x, 1.0f)); 
+  REQUIRE(smallDiff(q.y, 1.0f)); 
+  REQUIRE(smallDiff(q.z, 1.0f)); 
 }
 
 TEST_CASE("Quaternion Constructor with values 2", "[quaternion]") {
   Quaternion q = {5.0f, 12.0f, 4.0f, 8.0f}; 
-  REQUIRE(q.w == 5.0f); 
-  REQUIRE(q.x == 12.0f); 
-  REQUIRE(q.y == 4.0f); 
-  REQUIRE(q.z == 8.0f); 
+  REQUIRE(smallDiff(q.w, 5.0f)); 
+  REQUIRE(smallDiff(q.x, 12.0f)); 
+  REQUIRE(smallDiff(q.y, 4.0f)); 
+  REQUIRE(smallDiff(q.z, 8.0f)); 
 }
 
 TEST_CASE("Quaternion Constructor with values 3", "[quaternion]") {
   Quaternion q = {32.0f, 19.0f, 101.0f, 37.0f}; 
-  REQUIRE(q.w == 32.0f); 
-  REQUIRE(q.x == 19.0f); 
-  REQUIRE(q.y == 101.0f); 
-  REQUIRE(q.z == 37.0f); 
+  REQUIRE(smallDiff(q.w, 32.0f)); 
+  REQUIRE(smallDiff(q.x, 19.0f)); 
+  REQUIRE(smallDiff(q.y, 101.0f)); 
+  REQUIRE(smallDiff(q.z, 37.0f)); 
 }
 
 TEST_CASE("Quaternion Constructor with values 4", "[quaternion]") {
   Quaternion q = {5.0f, 39.0f, 2.0f, 17.0f}; 
-  REQUIRE(q.w == 5.0f); 
-  REQUIRE(q.x == 39.0f); 
-  REQUIRE(q.y == 2.0f); 
-  REQUIRE(q.z == 17.0f); 
+  REQUIRE(smallDiff(q.w, 5.0f)); 
+  REQUIRE(smallDiff(q.x, 39.0f)); 
+  REQUIRE(smallDiff(q.y, 2.0f)); 
+  REQUIRE(smallDiff(q.z, 17.0f)); 
 }
 
 TEST_CASE("Quaternion Empty Constructor", "[quaternion]") {
   Quaternion q; 
-  REQUIRE(q.w == 0.0f); 
-  REQUIRE(q.x == 0.0f); 
-  REQUIRE(q.y == 0.0f); 
-  REQUIRE(q.z == 0.0f); 
+  REQUIRE(smallDiff(q.w, 0.0f)); 
+  REQUIRE(smallDiff(q.x, 0.0f)); 
+  REQUIRE(smallDiff(q.y, 0.0f)); 
+  REQUIRE(smallDiff(q.z, 0.0f)); 
 }
 
 TEST_CASE("Normalize unit quaternion", "[quaternion]") {
   Quaternion q = {0.0f, 0.0f, 0.0f, 1.0f}; 
   q.normalize(); 
-  REQUIRE(q.w == q.w); 
-  REQUIRE(q.x == q.x); 
-  REQUIRE(q.y == q.y); 
-  REQUIRE(q.z == q.z); 
+  REQUIRE(smallDiff(q.w, q.w)); 
+  REQUIRE(smallDiff(q.x, q.x)); 
+  REQUIRE(smallDiff(q.y, q.y)); 
+  REQUIRE(smallDiff(q.z, q.z)); 
 }
+
+TEST_CASE("Normalize unit quaternion with zeros", "[quaternion]") {
+  Quaternion q = {0.0f, 0.0f, 0.0f, 4.0f}; 
+  q.normalize(); 
+  REQUIRE(smallDiff(q.w, q.w)); 
+  REQUIRE(smallDiff(q.x, q.x)); 
+  REQUIRE(smallDiff(q.y, q.y)); 
+  REQUIRE(smallDiff(q.z, 1.0f)); 
+}
+
 
 // TODO getting infinite length on this case
 TEST_CASE("Normalize typical quaternion 1", "[quaternion]") {
