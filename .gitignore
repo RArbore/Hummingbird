@@ -16,4 +16,7 @@ perf*
 *.txt
 
 # coverage data
-*.gcno
+*.gcno 
+out/*
+out/
+*.info

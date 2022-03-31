@@ -95,6 +95,10 @@ clean:
 	rm -rf build/coverage/*.o
 	rm -rf hummingbird
 	rm -rf test
+	rm -rf coverage
+	rm -rf out/*
+	rm -rf *.gcno
+	rm -rf coverage.info
 
 .DEFAULT: hummingbird
 .PHONY: exe exe_test clean
