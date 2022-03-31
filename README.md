@@ -9,7 +9,10 @@ To build the engine, you will need:
 - GLFW
 - JsonCpp
 - Boost
-Additionally, Hummingbird uses various AVX instructions to improve performance. As a result, you will need a modern x86-64 cpu.
+
+Additionally, Hummingbird uses various AVX instructions to improve performance. As a result, you will need to have a modern x86-64 machine to run Hummingbird.
+
+Currently, Hummingbird can be built for Linux. It has not been tested on MacOS, BSDs, or Windows.
 
 ## Build
 To build Hummingbird, run the following:
