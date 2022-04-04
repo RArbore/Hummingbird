@@ -20,6 +20,8 @@ W_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wd
 
 CXX_FLAGS=-std=c++17 -Ofast -flto -fno-signed-zeros -fno-trapping-math -frename-registers -funroll-loops -fopenmp -D_GLIBCXX_PARALLEL -mavx -march=native -Iinclude $(W_FLAGS)
 
+COV_FLAGS=$(CXX_FLAGS) --coverage
+
 L_FLAGS=-L/usr/lib/x86_64-linux-gnu -lglfw -lGL -ljsoncpp -fopenmp -flto
 
 hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/quaternion.o build/octree.o build/playback.o build/vertex.o build/fragment.o
@@ -56,14 +58,51 @@ build/collidertests.o: tests/physics_tests/collider_tests.cc
 build/serializationtest.o: tests/physics_tests/serialization_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
+
+coverage: build/coverage/cli.o build/coverage/engine.o build/coverage/quattests.o build/coverage/tests.o build/coverage/quaternion.o build/coverage/collidertests.o build/coverage/collider.o build/coverage/playback.o build/coverage/serializationtest.o
+	$(LD) $(L_FLAGS) --coverage -o $@ $^
+build/coverage/tests.o: tests/cli_tests.cc
+	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
+build/coverage/quattests.o: tests/physics_tests/quat_tests.cc
+	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
+build/coverage/collidertests.o: tests/physics_tests/collider_tests.cc
+	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
+build/coverage/serializationtest.o: tests/physics_tests/serialization_tests.cc
+	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
+build/coverage/main.o: src/main.cc include/physics/engine.h include/interface.h include/cli.h
+	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
+build/coverage/interface.o: src/interface.cc include/interface.h include/physics/engine.h
+	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
+build/coverage/cli.o: src/cli.cc include/cli.h
+	$(CXX) $(COV_FLAGS) -c -o $@ $<
+build/coverage/engine.o: src/physics/engine.cc include/physics/engine.h include/physics/collider.h include/physics/quaternion.h include/physics/octree.h include/cli.h
+	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
+build/coverage/collider.o: src/physics/collider.cc include/physics/collider.h
+	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
+build/coverage/quaternion.o: src/physics/quaternion.cc include/physics/quaternion.h
+	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
+build/coverage/octree.o: src/physics/octree.cc include/physics/octree.h
+	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
+build/coverage/playback.o: src/playback.cc include/playback.h
+	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
+
 exe: hummingbird
 	__GL_SYNC_TO_VBLANK=0 ./hummingbird example.json
 exe_test: test
 	./test
+exe_coverage: coverage
+	./coverage
+	lcov --capture --directory . --output-file coverage.info
+	genhtml coverage.info --output-directory out
 clean:
 	rm -rf build/*.o
+	rm -rf build/coverage/*.o
 	rm -rf hummingbird
 	rm -rf test
+	rm -rf coverage
+	rm -rf out/*
+	rm -rf *.gcno
+	rm -rf coverage.info
 
 .DEFAULT: hummingbird
-.PHONY: exe exe_test clean
+.PHONY: exe exe_test exe_coverage clean

@@ -4,6 +4,7 @@
 # executable
 hummingbird
 test
+coverage
 
 # editor files
 .vscode/*
@@ -13,3 +14,9 @@ perf*
 
 # record data
 *.txt
+
+# coverage data
+*.gcno 
+out/*
+out/
+*.info
