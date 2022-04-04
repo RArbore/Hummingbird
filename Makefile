@@ -90,6 +90,10 @@ exe: hummingbird
 	__GL_SYNC_TO_VBLANK=0 ./hummingbird example.json
 exe_test: test
 	./test
+exe_coverage: coverage
+	./coverage
+	lcov --capture --directory . --output-file coverage.info
+	genhtml coverage.info --output-directory out
 clean:
 	rm -rf build/*.o
 	rm -rf build/coverage/*.o
@@ -101,4 +105,4 @@ clean:
 	rm -rf coverage.info
 
 .DEFAULT: hummingbird
-.PHONY: exe exe_test clean
+.PHONY: exe exe_test exe_coverage clean
