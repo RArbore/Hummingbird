@@ -99,6 +99,7 @@ clean:
 	rm -rf out/*
 	rm -rf *.gcno
 	rm -rf coverage.info
+	rm -rf *.rec
 
 .DEFAULT: hummingbird
 .PHONY: exe exe_test exe_coverage clean
