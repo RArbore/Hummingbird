@@ -102,7 +102,7 @@ int runEngine(int argc, char **argv, bool record) {
 
     after = micro_sec();
     dt = static_cast<float>(after - before) / 1000000.0f;
-    std::cout << "FPS: " << 1. / dt << '\n';
+    // std::cout << "FPS: " << 1. / dt << '\n';
   }
   return 0; 
 }
