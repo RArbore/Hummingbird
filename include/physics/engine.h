@@ -66,8 +66,6 @@ public:
   std::size_t get_num_bodies() const;
   const float* get_boundary() const;
 
-  friend void dump_init_to_file(std::ofstream &stream, const Engine& engine);
-  friend void load_init_from_file(std::ifstream &stream, Engine& engine);
 private:
   /*
    * Constants / configuration.
@@ -96,6 +94,15 @@ private:
   std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>> find_collisions(const std::unique_ptr<Octree> octree);
   void collision_response(const std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>>& collisions);
   void collision_response_with_walls();
+
+  /*
+   * Functions for playback
+   */
+  void dump_init_to_file(std::ofstream &stream);
+  void load_init_from_file(std::ifstream &stream);
+  void dump_tick_to_file(std::ofstream &stream);
+  void load_tick_from_file(std::ifstream &stream);
+
 
   /*
    * Utility functions for performing vector operations.
