@@ -24,7 +24,7 @@ COV_FLAGS=$(CXX_FLAGS) --coverage
 
 L_FLAGS=-L/usr/lib/x86_64-linux-gnu -lglfw -lGL -ljsoncpp -fopenmp -flto
 
-hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/quaternion.o build/octree.o build/playback.o build/vertex.o build/fragment.o
+hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/quaternion.o build/octree.o build/vertex.o build/fragment.o
 	$(LD) -o $@ $^ $(L_FLAGS)
 build/main.o: src/main.cc include/physics/engine.h include/interface.h include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
@@ -40,14 +40,12 @@ build/quaternion.o: src/physics/quaternion.cc include/physics/quaternion.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/octree.o: src/physics/octree.cc include/physics/octree.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
-build/playback.o: src/playback.cc include/playback.h
-	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/vertex.o: shaders/vertex.glsl
 	objcopy --input binary --output elf64-x86-64 $< $@
 build/fragment.o: shaders/fragment.glsl
 	objcopy --input binary --output elf64-x86-64 $< $@
 
-test: build/cli.o build/engine.o build/quattests.o build/tests.o build/quaternion.o build/collidertests.o build/collider.o build/playback.o build/serializationtest.o
+test: build/cli.o build/engine.o build/quattests.o build/tests.o build/quaternion.o build/collidertests.o build/collider.o build/serializationtest.o
 	$(LD) $(L_FLAGS) -o $@ $^
 build/tests.o: tests/cli_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
@@ -82,8 +80,6 @@ build/coverage/collider.o: src/physics/collider.cc include/physics/collider.h
 build/coverage/quaternion.o: src/physics/quaternion.cc include/physics/quaternion.h
 	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
 build/coverage/octree.o: src/physics/octree.cc include/physics/octree.h
-	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
-build/coverage/playback.o: src/playback.cc include/playback.h
 	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
 
 exe: hummingbird
