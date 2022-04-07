@@ -1,6 +1,7 @@
 # Hummingbird
 Hummingbird is a simple rigid body physics engine.
 
+Currently, the engine supports collision between spherical bodies and solid walls. 
 ## Dependencies
 To build the engine, you will need:
 - g++ (with OpenMP support)
