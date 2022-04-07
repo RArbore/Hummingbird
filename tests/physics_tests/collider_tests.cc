@@ -59,6 +59,28 @@ TEST_CASE("Two sphere no collide test 3","[SphereCollider]"){
     REQUIRE(!response.collides);
 }
 
+TEST_CASE("Two sphere no collide test 4","[SphereCollider]"){
+    // Sum of radii is 12.0
+    SphereCollider collider1(6.0f);
+    SphereCollider collider2(6.0f);
+    // Distance between centres is more than 15.0
+    Transform pos1 {18.0f, 0.0f, 0.0f};
+    Transform pos2 {3.0f, 4.0f, 12.0f};
+    CollisionResponse response = collider1.checkCollision(collider2, pos1, pos2);
+    REQUIRE(!response.collides);
+}
+
+TEST_CASE("Two sphere no collide test 5","[SphereCollider]"){
+    // Sum of radii is 10.0
+    SphereCollider collider1(4.0f);
+    SphereCollider collider2(6.0f);
+    // Distance between centres is 11.0
+    Transform pos1 {30.0f, 25.0f, 25.0f};
+    Transform pos2 {41.0f, 25.0f, 25.0f};
+    CollisionResponse response = collider1.checkCollision(collider2, pos1, pos2);
+    REQUIRE(!response.collides);
+}
+
 TEST_CASE("Two sphere collides test","[SphereCollider]"){
     // Sum of radii is 65.1
     SphereCollider collider1(33.1f);
