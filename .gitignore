@@ -13,7 +13,7 @@ coverage
 perf*
 
 # record data
-*.txt
+*.rec
 
 # coverage data
 *.gcno 

@@ -32,6 +32,8 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
 				   elasticity(cfg.elasticity),
 				   boundary{cfg.boundary[0], cfg.boundary[1], cfg.boundary[2], cfg.boundary[3], cfg.boundary[4], cfg.boundary[5]},
 				   num_bodies(cfg.num_bodies),
+				   record(false),
+				   playback(false),
 				   force{vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f), vector32f(num_bodies, 0.0f)},
 				   walls{WallCollider(1.0f, 0.0f, 0.0f), WallCollider(-1.0f, 0.0f, 0.0f), WallCollider(0.0f, 1.0f, 0.0f), WallCollider(0.0f, -1.0f, 0.0f), WallCollider(0.0f, 0.0f, 1.0f), WallCollider(0.0f, 0.0f, -1.0f)} {
   /*
@@ -83,6 +85,23 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
   multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
 }
 
+Engine::Engine(const Config& cfg, std::string file_name): Engine(cfg) {
+  if (file_name != "") {
+    record = true;
+    fs = std::fstream(file_name, std::ios::binary | std::ios::trunc | std::ios::out);
+    dump_init_to_file();
+  }
+}
+
+Engine::Engine(const std::string& file_name):
+  record(false),
+  playback(true),
+  fs(file_name, std::ios::binary | std::ios::in),
+  walls{WallCollider(1.0f, 0.0f, 0.0f), WallCollider(-1.0f, 0.0f, 0.0f), WallCollider(0.0f, 1.0f, 0.0f), WallCollider(0.0f, -1.0f, 0.0f), WallCollider(0.0f, 0.0f, 1.0f), WallCollider(0.0f, 0.0f, -1.0f)} {
+  load_init_from_file();
+  load_tick_from_file();
+}
+
 Engine::~Engine() {
   omp_destroy_lock(&collision_set_lock);
 }
@@ -100,12 +119,18 @@ std::size_t Engine::get_num_bodies() const { return num_bodies; }
 const float* Engine::get_boundary() const { return boundary; }
 
 void Engine::update(const float dt) {
-  if (paused) return;
-  dynamics_update(dt);
-  auto octree = make_octree();
-  auto collisions = find_collisions(std::move(octree));
-  collision_response(collisions);
-  collision_response_with_walls();
+  if (playback) {
+    load_tick_from_file();
+  }
+  else {
+    if (paused) return;
+    dynamics_update(dt);
+    auto octree = make_octree();
+    auto collisions = find_collisions(std::move(octree));
+    collision_response(collisions);
+    collision_response_with_walls();
+    if (record) dump_tick_to_file();
+  }
 }
 
 /*
@@ -314,3 +339,41 @@ AABB Engine::get_aabb_at(const std::size_t i) {
   else return AABB{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 }
 
+void Engine::dump_init_to_file() {
+  fs.write(reinterpret_cast<const char*>(&num_bodies), static_cast<std::streamsize>(sizeof(std::size_t)));
+  for (auto i = 0; i < 6; ++i) {
+    fs.write(reinterpret_cast<const char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
+  }
+  for (auto& coll : colliders) {
+    coll->serialize(fs);
+  }
+}
+
+void Engine::load_init_from_file() {
+  fs.read(reinterpret_cast<char*>(&num_bodies), static_cast<std::streamsize>(sizeof(std::size_t)));
+  pos.x.resize(num_bodies);
+  pos.y.resize(num_bodies);
+  pos.z.resize(num_bodies);
+  ang_pos.resize(num_bodies);
+  for (auto i = 0; i < 6; ++i) {
+    fs.read(reinterpret_cast<char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
+  }
+  for (std::size_t i = 0; i < num_bodies; ++i) {
+    colliders.push_back(deserialize_collider(fs));
+  }
+}
+
+void Engine::dump_tick_to_file() {
+  fs.write(reinterpret_cast<const char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
+  fs.write(reinterpret_cast<const char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
+  fs.write(reinterpret_cast<const char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
+  fs.write(reinterpret_cast<const char*>(ang_pos.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(Quaternion)));
+}
+
+void Engine::load_tick_from_file() {
+  if (fs.peek() == EOF) return;
+  fs.read(reinterpret_cast<char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
+  fs.read(reinterpret_cast<char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
+  fs.read(reinterpret_cast<char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
+  fs.read(reinterpret_cast<char*>(ang_pos.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(Quaternion)));
+}

@@ -17,7 +17,6 @@
 #include <physics/engine.h>
 #include <interface.h>
 #include <cli.h>
-#include <playback.h>
 
 /*
  * Get the current Unix time in microseconds.
@@ -75,10 +74,15 @@ int main(int argc, char **argv) {
 int runEngine(int argc, char **argv, bool record) {
   srand(static_cast<unsigned int>(micro_sec()));
 
-  Config config(argv[1]);
+  Config config(record ? argv[2] : argv[1]);
   if (config.initialize()) return -1;
 
-  Engine engine(config);
+  std::string output = "";
+  if (record) {
+    output = argv[2];
+    output = output.substr(0, output.size()-5) + ".rec";
+  }
+  Engine engine(config, output); 
   
   Graphics graphics(engine);
   if (graphics.initialize()) return -1;
@@ -108,6 +112,38 @@ int runEngine(int argc, char **argv, bool record) {
 }
 
 int runPlayback(int argc, char **argv) {
+  srand(static_cast<unsigned int>(micro_sec()));
 
+  std::string input = argv[2]; 
+  if(input.substr(input.size()-4) != ".rec") {
+    std::cout << input.substr(input.size()-4); 
+    std::cerr << "Must input a .rec file" << std::endl; 
+    return -1;
+  }
+  Engine engine(argv[2]);
+  
+  Graphics graphics(engine);
+  if (graphics.initialize()) return -1;
+  
+  /*
+   * We track the frametime to keep consistent physics.
+   * If we multiply physics updates by the delta time,
+   * we can achieve a smooth animation while running at
+   * an uncapped framerate.
+   */
+  float dt = 0.;
+
+  unsigned long long before = 0, after = 0;
+
+  while (!graphics.should_close()) {
+    before = micro_sec();
+    
+    engine.update(0.0);
+    graphics.render_tick(dt);
+
+    after = micro_sec();
+    dt = static_cast<float>(after - before) / 1000000.0f;
+    // std::cout << "FPS: " << 1. / dt << '\n';
+  }
   return 0; 
 }

@@ -19,6 +19,7 @@
 #include <memory>
 #include <tuple>
 #include <iostream>
+#include <string>
 
 #include <boost/align/aligned_allocator.hpp>
 
@@ -44,6 +45,8 @@
 class Engine {
 public:
   explicit Engine(const Config& cfg);
+  Engine(const Config& cfg, std::string file_name);
+  explicit Engine(const std::string& file_name); 
   ~Engine();
 
   void update(const float dt);
@@ -66,14 +69,18 @@ public:
   std::size_t get_num_bodies() const;
   const float* get_boundary() const;
 
-  friend void dump_init_to_file(std::ofstream &stream, const Engine& engine);
-  friend void load_init_from_file(std::ifstream &stream, Engine& engine);
 private:
   /*
    * Constants / configuration.
    */
   float grav_constant, elasticity, boundary[6];
   std::size_t num_bodies;
+
+  /**
+   * for facilitating playback/record
+   */
+  bool record = false, playback = false; 
+  std::fstream fs; 
 
   /*
    * Dynamics data, organized using data
@@ -96,6 +103,14 @@ private:
   std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>> find_collisions(const std::unique_ptr<Octree> octree);
   void collision_response(const std::vector<std::tuple<CollisionResponse, unsigned int, unsigned int>>& collisions);
   void collision_response_with_walls();
+
+  /*
+   * Functions for playback/record
+   */
+  void dump_init_to_file();
+  void load_init_from_file();
+  void dump_tick_to_file();
+  void load_tick_from_file();
 
   /*
    * Utility functions for performing vector operations.

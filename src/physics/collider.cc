@@ -65,6 +65,40 @@ CollisionResponse WallCollider::checkCollision([[maybe_unused]] const WallCollid
   return result;
 }
 
+void SphereCollider::serialize(std::fstream& fs) const {
+  ColliderType type = ColliderType::Sphere;
+  fs.write(reinterpret_cast<const char*>(&type), static_cast<std::streamsize>(sizeof(ColliderType)));
+  fs.write(reinterpret_cast<const char*>(&radius), static_cast<std::streamsize>(sizeof(float)));
+}
+
+void WallCollider::serialize(std::fstream& fs) const {
+  ColliderType type = ColliderType::Wall;
+  fs.write(reinterpret_cast<const char*>(&type), static_cast<std::streamsize>(sizeof(ColliderType)));
+  fs.write(reinterpret_cast<const char*>(&nx), static_cast<std::streamsize>(sizeof(float)));
+  fs.write(reinterpret_cast<const char*>(&ny), static_cast<std::streamsize>(sizeof(float)));
+  fs.write(reinterpret_cast<const char*>(&nz), static_cast<std::streamsize>(sizeof(float)));
+}
+
+std::unique_ptr<Collider> deserialize_collider(std::fstream& fs) {
+  ColliderType type;
+  fs.read(reinterpret_cast<char*>(&type), static_cast<std::streamsize>(sizeof(ColliderType)));
+  switch (type) {
+  case ColliderType::Sphere: {
+    float radius;
+    fs.read(reinterpret_cast<char*>(&radius), static_cast<std::streamsize>(sizeof(float)));
+    return std::make_unique<SphereCollider>(radius);
+  }
+  case ColliderType::Wall: {
+    float nx, ny, nz;
+    fs.read(reinterpret_cast<char*>(&nx), static_cast<std::streamsize>(sizeof(float)));
+    fs.read(reinterpret_cast<char*>(&ny), static_cast<std::streamsize>(sizeof(float)));
+    fs.read(reinterpret_cast<char*>(&nz), static_cast<std::streamsize>(sizeof(float)));
+    return std::make_unique<WallCollider>(nx, ny, nz);
+  }
+  default: return nullptr;
+  }
+}
+
 Transform operator+(const Transform& a, const Transform& b) {
   return {a.x + b.x, a.y + b.y, a.z + b.z};
 }

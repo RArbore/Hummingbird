@@ -18,13 +18,13 @@ LD=g++
 
 W_FLAGS=-pedantic -Wall -Wextra -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wdisabled-optimization -Wformat=2 -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wsign-conversion -Wsign-promo -Wstrict-null-sentinel -Wswitch-default -Wundef -Werror -Wno-unused -Wconversion
 
-CXX_FLAGS=-std=c++17 -Ofast -flto -fno-signed-zeros -fno-trapping-math -frename-registers -funroll-loops -fopenmp -D_GLIBCXX_PARALLEL -mavx -march=native -Iinclude $(W_FLAGS)
+CXX_FLAGS=-g -std=c++17 -Ofast -flto -fno-signed-zeros -fno-trapping-math -frename-registers -funroll-loops -fopenmp -D_GLIBCXX_PARALLEL -mavx -march=native -Iinclude $(W_FLAGS)
 
 COV_FLAGS=$(CXX_FLAGS) --coverage
 
 L_FLAGS=-L/usr/lib/x86_64-linux-gnu -lglfw -lGL -ljsoncpp -fopenmp -flto
 
-hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/quaternion.o build/octree.o build/playback.o build/vertex.o build/fragment.o
+hummingbird: build/main.o build/interface.o build/cli.o build/engine.o build/collider.o build/quaternion.o build/octree.o build/vertex.o build/fragment.o
 	$(LD) -o $@ $^ $(L_FLAGS)
 build/main.o: src/main.cc include/physics/engine.h include/interface.h include/cli.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
@@ -40,14 +40,12 @@ build/quaternion.o: src/physics/quaternion.cc include/physics/quaternion.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/octree.o: src/physics/octree.cc include/physics/octree.h
 	$(CXX) $(CXX_FLAGS) -c -o $@ $<
-build/playback.o: src/playback.cc include/playback.h
-	$(CXX) $(CXX_FLAGS) -c -o $@ $<
 build/vertex.o: shaders/vertex.glsl
 	objcopy --input binary --output elf64-x86-64 $< $@
 build/fragment.o: shaders/fragment.glsl
 	objcopy --input binary --output elf64-x86-64 $< $@
 
-test: build/cli.o build/engine.o build/quattests.o build/tests.o build/quaternion.o build/collidertests.o build/collider.o build/playback.o build/serializationtest.o
+test: build/cli.o build/engine.o build/quattests.o build/tests.o build/quaternion.o build/collidertests.o build/collider.o
 	$(LD) $(L_FLAGS) -o $@ $^
 build/tests.o: tests/cli_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
@@ -55,19 +53,14 @@ build/quattests.o: tests/physics_tests/quat_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 build/collidertests.o: tests/physics_tests/collider_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
-build/serializationtest.o: tests/physics_tests/serialization_tests.cc
-	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
-
-coverage: build/coverage/cli.o build/coverage/engine.o build/coverage/quattests.o build/coverage/tests.o build/coverage/quaternion.o build/coverage/collidertests.o build/coverage/collider.o build/coverage/playback.o build/coverage/serializationtest.o
+coverage: build/coverage/cli.o build/coverage/engine.o build/coverage/quattests.o build/coverage/tests.o build/coverage/quaternion.o build/coverage/collidertests.o build/coverage/collider.o build/coverage/playback.o
 	$(LD) $(L_FLAGS) --coverage -o $@ $^
 build/coverage/tests.o: tests/cli_tests.cc
 	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
 build/coverage/quattests.o: tests/physics_tests/quat_tests.cc
 	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
 build/coverage/collidertests.o: tests/physics_tests/collider_tests.cc
-	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
-build/coverage/serializationtest.o: tests/physics_tests/serialization_tests.cc
 	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
 build/coverage/main.o: src/main.cc include/physics/engine.h include/interface.h include/cli.h
 	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
@@ -82,8 +75,6 @@ build/coverage/collider.o: src/physics/collider.cc include/physics/collider.h
 build/coverage/quaternion.o: src/physics/quaternion.cc include/physics/quaternion.h
 	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
 build/coverage/octree.o: src/physics/octree.cc include/physics/octree.h
-	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
-build/coverage/playback.o: src/playback.cc include/playback.h
 	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
 
 exe: hummingbird
@@ -103,6 +94,7 @@ clean:
 	rm -rf out/*
 	rm -rf *.gcno
 	rm -rf coverage.info
+	rm -rf *.rec
 
 .DEFAULT: hummingbird
 .PHONY: exe exe_test exe_coverage clean
