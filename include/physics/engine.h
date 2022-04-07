@@ -45,7 +45,7 @@
 class Engine {
 public:
   explicit Engine(const Config& cfg);
-  Engine(); 
+  explicit Engine(const std::string& file_name); 
   ~Engine();
 
   void update(const float dt);

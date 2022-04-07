@@ -26,8 +26,7 @@ inline unsigned long long micro_sec() {
     return static_cast<unsigned long long>(std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count());
 }
 
-int runEngineRecord(int argc, char **argv); 
-int runEngine(int argc, char **argv); 
+int runEngine(int argc, char **argv, bool record); 
 int runPlayback(int argc, char **argv); 
 
 /**
@@ -47,14 +46,14 @@ int main(int argc, char **argv) {
       std::cout << "-r \t record simulation" << std::endl; 
       return 0; 
     }
-    return runEngine(argc, argv); 
+    return runEngine(argc, argv, false); 
   }
 
   // argc == 3
   if(strcmp(argv[1], "-p") == 0) { // playback flag
     return runPlayback(argc, argv); 
   } else if(strcmp(argv[1], "-r") == 0) { // record flag
-    return runEngineRecord(argc, argv); 
+    return runEngine(argc, argv, true); 
   } else {
     std::cout << "Flag usage: " << argv[0] << " -[p/r] <json_file>" << std::endl; 
     return -1; 
@@ -72,13 +71,19 @@ int main(int argc, char **argv) {
  * is returned up the stack. We also decide whether 
  * or not to record based on a boolean input. 
  */
-int runEngine(int argc, char **argv) {
+int runEngine(int argc, char **argv, bool record) {
   srand(static_cast<unsigned int>(micro_sec()));
 
-  Config config(argv[1]);
+  Config config(record ? argv[2] : argv[1]);
   if (config.initialize()) return -1;
 
   Engine engine(config); 
+  if (record) {
+    engine.setRecord(true); 
+    std::string output = argv[2]; 
+    output = output.substr(0, output.size()-5) + ".rec"; 
+    engine.setFile(output); 
+  }
   
   Graphics graphics(engine);
   if (graphics.initialize()) return -1;
@@ -110,19 +115,13 @@ int runEngine(int argc, char **argv) {
 int runPlayback(int argc, char **argv) {
   srand(static_cast<unsigned int>(micro_sec()));
 
-  // do we require a config file for playback? how to reconcile
-  Config config(argv[1]);
-  if (config.initialize()) return -1;
-
-  Engine engine();
-  // set playback flag/file
-  engine.setPlayback(true); 
   std::string input = argv[2]; 
   if(input.substr(input.size()-4) != ".rec") {
     std::cout << input.substr(input.size()-4); 
     std::cerr << "Must input a .rec file" << std::endl; 
+    return -1;
   }
-  engine.setFile(argv[2]); 
+  Engine engine(argv[2]);
   
   Graphics graphics(engine);
   if (graphics.initialize()) return -1;
@@ -133,55 +132,14 @@ int runPlayback(int argc, char **argv) {
    * we can achieve a smooth animation while running at
    * an uncapped framerate.
    */
-  float dt = 0., ticks_per_frame = static_cast<float>(config.ticks_per_frame);
+  float dt = 0.;
 
   unsigned long long before = 0, after = 0;
 
   while (!graphics.should_close()) {
     before = micro_sec();
     
-    for (std::size_t i = 0; i < config.ticks_per_frame; ++i)
-      engine.update(config.speed * dt / ticks_per_frame);
-    graphics.render_tick(dt);
-
-    after = micro_sec();
-    dt = static_cast<float>(after - before) / 1000000.0f;
-    // std::cout << "FPS: " << 1. / dt << '\n';
-  }
-  return 0; 
-}
-
-int runEngineRecord(int argc, char** argv) {
-  srand(static_cast<unsigned int>(micro_sec()));
-
-  Config config(argv[2]);
-  if (config.initialize()) return -1;
-
-  Engine engine(config); 
-  engine.setRecord(true); 
-  std::string output = argv[2]; 
-  output = output.substr(0, output.size()-4) + "rec"; 
-  engine.setFile(output); 
-  std::cout << output << std::endl; 
-  
-  Graphics graphics(engine);
-  if (graphics.initialize()) return -1;
-  
-  /*
-   * We track the frametime to keep consistent physics.
-   * If we multiply physics updates by the delta time,
-   * we can achieve a smooth animation while running at
-   * an uncapped framerate.
-   */
-  float dt = 0., ticks_per_frame = static_cast<float>(config.ticks_per_frame);
-
-  unsigned long long before = 0, after = 0;
-
-  while (!graphics.should_close()) {
-    before = micro_sec();
-    
-    for (std::size_t i = 0; i < config.ticks_per_frame; ++i)
-      engine.update(config.speed * dt / ticks_per_frame);
+    engine.update(0.0);
     graphics.render_tick(dt);
 
     after = micro_sec();
