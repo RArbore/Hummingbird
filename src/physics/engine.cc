@@ -83,13 +83,13 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
    */
   const __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
   multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
-  dump_init_to_file(fs);
 }
 
 Engine::Engine(const Config& cfg, std::string file_name): Engine(cfg) {
   if (file_name != "") {
     record = true;
     fs = std::fstream(file_name, std::ios::binary | std::ios::trunc | std::ios::out);
+    dump_init_to_file();
   }
 }
 
@@ -98,8 +98,8 @@ Engine::Engine(const std::string& file_name):
   playback(true),
   fs(file_name, std::ios::binary | std::ios::in),
   walls{WallCollider(1.0f, 0.0f, 0.0f), WallCollider(-1.0f, 0.0f, 0.0f), WallCollider(0.0f, 1.0f, 0.0f), WallCollider(0.0f, -1.0f, 0.0f), WallCollider(0.0f, 0.0f, 1.0f), WallCollider(0.0f, 0.0f, -1.0f)} {
-  load_init_from_file(fs);
-  //load_tick_from_file(ifs);
+  load_init_from_file();
+  load_tick_from_file();
 }
 
 Engine::~Engine() {
@@ -120,7 +120,7 @@ const float* Engine::get_boundary() const { return boundary; }
 
 void Engine::update(const float dt) {
   if (playback) {
-    //load_tick_from_file(ifs);
+    load_tick_from_file();
   }
   else {
     if (paused) return;
@@ -129,7 +129,7 @@ void Engine::update(const float dt) {
     auto collisions = find_collisions(std::move(octree));
     collision_response(collisions);
     collision_response_with_walls();
-    //if (record) dump_tick_to_file(ofs);
+    if (record) dump_tick_to_file();
   }
 }
 
@@ -339,35 +339,31 @@ AABB Engine::get_aabb_at(const std::size_t i) {
   else return AABB{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 }
 
-void Engine::dump_init_to_file(std::fstream &stream) {
-  stream.write(reinterpret_cast<const char*>(&num_bodies), static_cast<std::streamsize>(sizeof(std::size_t)));
-  std::cout << num_bodies << std::endl;
+void Engine::dump_init_to_file() {
+  fs.write(reinterpret_cast<const char*>(&num_bodies), static_cast<std::streamsize>(sizeof(std::size_t)));
   for (auto i = 0; i < 6; ++i) {
-    stream.write(reinterpret_cast<const char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
-    std::cout << boundary[i] << std::endl;
+    fs.write(reinterpret_cast<const char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
   }
-  stream.close();
+  fs.close();
 }
 
-void Engine::load_init_from_file(std::fstream &stream) {
-  stream.read(reinterpret_cast<char*>(&num_bodies), static_cast<std::streamsize>(sizeof(std::size_t)));
-  std::cout << num_bodies << std::endl;
+void Engine::load_init_from_file() {
+  fs.read(reinterpret_cast<char*>(&num_bodies), static_cast<std::streamsize>(sizeof(std::size_t)));
   for (auto i = 0; i < 6; ++i) {
-    stream.read(reinterpret_cast<char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
-    std::cout << boundary[i] << std::endl;
+    fs.read(reinterpret_cast<char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
   }
 }
 
-void Engine::dump_tick_to_file(std::fstream &stream) {
-  stream.write(reinterpret_cast<const char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
-  stream.write(reinterpret_cast<const char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
-  stream.write(reinterpret_cast<const char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
-  stream.flush();
+void Engine::dump_tick_to_file() {
+  fs.write(reinterpret_cast<const char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
+  fs.write(reinterpret_cast<const char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
+  fs.write(reinterpret_cast<const char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
+  fs.flush();
 }
 
-void Engine::load_tick_from_file(std::fstream &stream) {
-  if (stream.peek() == EOF) return;
-  stream.read(reinterpret_cast<char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
-  stream.read(reinterpret_cast<char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
-  stream.read(reinterpret_cast<char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
+void Engine::load_tick_from_file() {
+  if (fs.peek() == EOF) return;
+  fs.read(reinterpret_cast<char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
+  fs.read(reinterpret_cast<char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
+  fs.read(reinterpret_cast<char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
 }

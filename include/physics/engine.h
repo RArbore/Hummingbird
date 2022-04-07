@@ -107,10 +107,10 @@ private:
   /*
    * Functions for playback/record
    */
-  void dump_init_to_file(std::fstream &stream);
-  void load_init_from_file(std::fstream &stream);
-  void dump_tick_to_file(std::fstream &stream);
-  void load_tick_from_file(std::fstream &stream);
+  void dump_init_to_file();
+  void load_init_from_file();
+  void dump_tick_to_file();
+  void load_tick_from_file();
 
   /*
    * Utility functions for performing vector operations.
