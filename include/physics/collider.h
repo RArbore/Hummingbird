@@ -12,6 +12,9 @@
 
 #pragma once
 
+#include <fstream>
+#include <memory>
+
 #include <math.h>
 
 /*
@@ -41,6 +44,7 @@ struct CollisionResponse {
   bool collides;
 };
 
+enum class ColliderType { Sphere, Wall };
 struct SphereCollider;
 struct WallCollider;
 
@@ -57,6 +61,7 @@ struct Collider {
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const = 0;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const = 0;
   virtual CollisionResponse checkCollision(const WallCollider& other, const Transform& myPos, const Transform& otherPos) const = 0;
+  virtual void serialize(std::fstream& fs) const = 0;
   virtual ~Collider() = default;
 };
 
@@ -66,6 +71,7 @@ struct SphereCollider : public Collider {
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const override;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const override;
   virtual CollisionResponse checkCollision(const WallCollider& other, const Transform& myPos, const Transform& otherPos) const override;
+  virtual void serialize(std::fstream& fs) const override;
 };
 
 struct WallCollider : public Collider {
@@ -74,4 +80,7 @@ struct WallCollider : public Collider {
   virtual CollisionResponse checkCollision(const Collider& other, const Transform& myPos, const Transform& otherPos) const override;
   virtual CollisionResponse checkCollision(const SphereCollider& other, const Transform& myPos, const Transform& otherPos) const override;
   virtual CollisionResponse checkCollision(const WallCollider& other, const Transform& myPos, const Transform& otherPos) const override;
+  virtual void serialize(std::fstream& fs) const override;
 };
+
+std::unique_ptr<Collider> deserialize_collider(std::fstream& fs);

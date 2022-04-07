@@ -344,7 +344,9 @@ void Engine::dump_init_to_file() {
   for (auto i = 0; i < 6; ++i) {
     fs.write(reinterpret_cast<const char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
   }
-  
+  for (auto& coll : colliders) {
+    coll->serialize(fs);
+  }
 }
 
 void Engine::load_init_from_file() {
@@ -355,6 +357,9 @@ void Engine::load_init_from_file() {
   ang_pos.resize(num_bodies);
   for (auto i = 0; i < 6; ++i) {
     fs.read(reinterpret_cast<char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
+  }
+  for (std::size_t i = 0; i < num_bodies; ++i) {
+    colliders.push_back(deserialize_collider(fs));
   }
 }
 
