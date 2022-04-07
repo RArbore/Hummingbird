@@ -83,16 +83,23 @@ Engine::Engine(const Config& cfg): grav_constant(cfg.grav_constant),
    */
   const __m256 grav_constant_a = _mm256_set_ps(-grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant, -grav_constant);
   multiply_with_mass(force.y.data(), mass.data(), -grav_constant, grav_constant_a);
-  dump_init_to_file(ofs);
+  dump_init_to_file(fs);
+}
+
+Engine::Engine(const Config& cfg, std::string file_name): Engine(cfg) {
+  if (file_name != "") {
+    record = true;
+    fs = std::fstream(file_name, std::ios::binary | std::ios::trunc | std::ios::out);
+  }
 }
 
 Engine::Engine(const std::string& file_name):
   record(false),
   playback(true),
+  fs(file_name, std::ios::binary | std::ios::in),
   walls{WallCollider(1.0f, 0.0f, 0.0f), WallCollider(-1.0f, 0.0f, 0.0f), WallCollider(0.0f, 1.0f, 0.0f), WallCollider(0.0f, -1.0f, 0.0f), WallCollider(0.0f, 0.0f, 1.0f), WallCollider(0.0f, 0.0f, -1.0f)} {
-  setFile(file_name);
-  load_init_from_file(ifs);
-  load_tick_from_file(ifs);
+  load_init_from_file(fs);
+  //load_tick_from_file(ifs);
 }
 
 Engine::~Engine() {
@@ -113,7 +120,7 @@ const float* Engine::get_boundary() const { return boundary; }
 
 void Engine::update(const float dt) {
   if (playback) {
-    load_tick_from_file(ifs);
+    //load_tick_from_file(ifs);
   }
   else {
     if (paused) return;
@@ -122,7 +129,7 @@ void Engine::update(const float dt) {
     auto collisions = find_collisions(std::move(octree));
     collision_response(collisions);
     collision_response_with_walls();
-    if (record) dump_tick_to_file(ofs);
+    //if (record) dump_tick_to_file(ofs);
   }
 }
 
@@ -332,37 +339,17 @@ AABB Engine::get_aabb_at(const std::size_t i) {
   else return AABB{0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
 }
 
-/**
- * All playback functions
- */
-
-void Engine::setPlayback(bool p) { playback = p; }
-void Engine::setRecord(bool r) { record = r; }
-/**
- * Creates the proper file stream based on the playback/record flags
- * @param file_name name of the file being set as the file
- */
-void Engine::setFile(std::string file_name) {
-  if(playback) {
-    std::cout << "Opened for input: " << file_name << std::endl;
-    ifs.open(file_name, std::ios::in | std::ios::binary | std::ios::trunc);
-  }
-  else {
-    std::cout << "Opened for output: " << file_name << std::endl;
-    ofs.open(file_name, std::ios::out | std::ios::binary | std::ios::trunc); 
-  }
-}
-
-void Engine::dump_init_to_file(std::ofstream &stream) {
+void Engine::dump_init_to_file(std::fstream &stream) {
   stream.write(reinterpret_cast<const char*>(&num_bodies), static_cast<std::streamsize>(sizeof(std::size_t)));
   std::cout << num_bodies << std::endl;
   for (auto i = 0; i < 6; ++i) {
     stream.write(reinterpret_cast<const char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
     std::cout << boundary[i] << std::endl;
   }
+  stream.close();
 }
 
-void Engine::load_init_from_file(std::ifstream &stream) {
+void Engine::load_init_from_file(std::fstream &stream) {
   stream.read(reinterpret_cast<char*>(&num_bodies), static_cast<std::streamsize>(sizeof(std::size_t)));
   std::cout << num_bodies << std::endl;
   for (auto i = 0; i < 6; ++i) {
@@ -371,13 +358,14 @@ void Engine::load_init_from_file(std::ifstream &stream) {
   }
 }
 
-void Engine::dump_tick_to_file(std::ofstream &stream) {
+void Engine::dump_tick_to_file(std::fstream &stream) {
   stream.write(reinterpret_cast<const char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
   stream.write(reinterpret_cast<const char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
   stream.write(reinterpret_cast<const char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
+  stream.flush();
 }
 
-void Engine::load_tick_from_file(std::ifstream &stream) {
+void Engine::load_tick_from_file(std::fstream &stream) {
   if (stream.peek() == EOF) return;
   stream.read(reinterpret_cast<char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
   stream.read(reinterpret_cast<char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));

@@ -77,13 +77,12 @@ int runEngine(int argc, char **argv, bool record) {
   Config config(record ? argv[2] : argv[1]);
   if (config.initialize()) return -1;
 
-  Engine engine(config); 
+  std::string output = "";
   if (record) {
-    engine.setRecord(true); 
-    std::string output = argv[2]; 
-    output = output.substr(0, output.size()-5) + ".rec"; 
-    engine.setFile(output); 
+    output = argv[2];
+    output = output.substr(0, output.size()-5) + ".rec";
   }
+  Engine engine(config, output); 
   
   Graphics graphics(engine);
   if (graphics.initialize()) return -1;

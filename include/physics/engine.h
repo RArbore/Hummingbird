@@ -45,6 +45,7 @@
 class Engine {
 public:
   explicit Engine(const Config& cfg);
+  Engine(const Config& cfg, std::string file_name);
   explicit Engine(const std::string& file_name); 
   ~Engine();
 
@@ -68,14 +69,6 @@ public:
   std::size_t get_num_bodies() const;
   const float* get_boundary() const;
 
-  /**
-   * Public methods to change member variables 
-   * for playback/record from main
-   */
-  void setRecord(bool r); 
-  void setPlayback(bool p); 
-  void setFile(std::string file_name); 
-
 private:
   /*
    * Constants / configuration.
@@ -87,8 +80,7 @@ private:
    * for facilitating playback/record
    */
   bool record = false, playback = false; 
-  std::ofstream ofs; 
-  std::ifstream ifs; 
+  std::fstream fs; 
 
   /*
    * Dynamics data, organized using data
@@ -115,10 +107,10 @@ private:
   /*
    * Functions for playback/record
    */
-  void dump_init_to_file(std::ofstream &stream);
-  void load_init_from_file(std::ifstream &stream);
-  void dump_tick_to_file(std::ofstream &stream);
-  void load_tick_from_file(std::ifstream &stream);
+  void dump_init_to_file(std::fstream &stream);
+  void load_init_from_file(std::fstream &stream);
+  void dump_tick_to_file(std::fstream &stream);
+  void load_tick_from_file(std::fstream &stream);
 
   /*
    * Utility functions for performing vector operations.
