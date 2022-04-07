@@ -45,7 +45,7 @@ build/vertex.o: shaders/vertex.glsl
 build/fragment.o: shaders/fragment.glsl
 	objcopy --input binary --output elf64-x86-64 $< $@
 
-test: build/cli.o build/engine.o build/quattests.o build/tests.o build/quaternion.o build/collidertests.o build/collider.o build/serializationtest.o
+test: build/cli.o build/engine.o build/quattests.o build/tests.o build/quaternion.o build/collidertests.o build/collider.o
 	$(LD) $(L_FLAGS) -o $@ $^
 build/tests.o: tests/cli_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
@@ -53,19 +53,14 @@ build/quattests.o: tests/physics_tests/quat_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 build/collidertests.o: tests/physics_tests/collider_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
-build/serializationtest.o: tests/physics_tests/serialization_tests.cc
-	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
-
-coverage: build/coverage/cli.o build/coverage/engine.o build/coverage/quattests.o build/coverage/tests.o build/coverage/quaternion.o build/coverage/collidertests.o build/coverage/collider.o build/coverage/playback.o build/coverage/serializationtest.o
+coverage: build/coverage/cli.o build/coverage/engine.o build/coverage/quattests.o build/coverage/tests.o build/coverage/quaternion.o build/coverage/collidertests.o build/coverage/collider.o build/coverage/playback.o
 	$(LD) $(L_FLAGS) --coverage -o $@ $^
 build/coverage/tests.o: tests/cli_tests.cc
 	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
 build/coverage/quattests.o: tests/physics_tests/quat_tests.cc
 	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
 build/coverage/collidertests.o: tests/physics_tests/collider_tests.cc
-	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
-build/coverage/serializationtest.o: tests/physics_tests/serialization_tests.cc
 	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
 build/coverage/main.o: src/main.cc include/physics/engine.h include/interface.h include/cli.h
 	$(CXX) $(COV_FLAGS) -c -o $@ $< --coverage
