@@ -126,3 +126,42 @@ TEST_CASE("Normalize typical quaternion 4", "[quaternion]") {
   REQUIRE(smallDiff(q.y,q2.y/145.0f)); 
   REQUIRE(smallDiff(q.z,q2.z/145.0f)); 
 }
+
+
+
+/*
+Expected matrix:
+[  0.1333333, -0.6666667,  0.7333333;
+   0.9333333,  0.3333333,  0.1333333;
+  -0.3333333,  0.6666667,  0.6666667 ]
+*/
+
+TEST_CASE("Quaternion to matrix 1", "[quaternion]"){
+  Quaternion q = {4.0f, 1.0f, 2.0f, 3.0f};
+  q.normalize();
+  Matrix3 m = q.convert();
+  REQUIRE(smallDiff(m.arr[0], 0.133333f));
+  REQUIRE(smallDiff(m.arr[1], -0.666667f));
+  REQUIRE(smallDiff(m.arr[2], 0.733333f));
+  REQUIRE(smallDiff(m.arr[3], 0.933333f));
+  REQUIRE(smallDiff(m.arr[4], 0.333333f));
+  REQUIRE(smallDiff(m.arr[5], 0.133333f));
+  REQUIRE(smallDiff(m.arr[6], -0.333333f));
+  REQUIRE(smallDiff(m.arr[7], 0.6666667f));
+  REQUIRE(smallDiff(m.arr[8], 0.6666667f));
+}
+
+TEST_CASE("Quaternion to matrix 2", "[quaternion]"){
+  Quaternion q = {4.0f, 1.0f, 2.0f, 3.0f};
+  q.normalize();
+  Matrix3 m (q);
+  REQUIRE(smallDiff(m.arr[0], 0.133333f));
+  REQUIRE(smallDiff(m.arr[1], -0.666667f));
+  REQUIRE(smallDiff(m.arr[2], 0.733333f));
+  REQUIRE(smallDiff(m.arr[3], 0.933333f));
+  REQUIRE(smallDiff(m.arr[4], 0.333333f));
+  REQUIRE(smallDiff(m.arr[5], 0.133333f));
+  REQUIRE(smallDiff(m.arr[6], -0.333333f));
+  REQUIRE(smallDiff(m.arr[7], 0.6666667f));
+  REQUIRE(smallDiff(m.arr[8], 0.6666667f));
+}
