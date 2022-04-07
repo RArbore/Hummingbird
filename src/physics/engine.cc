@@ -344,11 +344,15 @@ void Engine::dump_init_to_file() {
   for (auto i = 0; i < 6; ++i) {
     fs.write(reinterpret_cast<const char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
   }
-  fs.close();
+  
 }
 
 void Engine::load_init_from_file() {
   fs.read(reinterpret_cast<char*>(&num_bodies), static_cast<std::streamsize>(sizeof(std::size_t)));
+  pos.x.resize(num_bodies);
+  pos.y.resize(num_bodies);
+  pos.z.resize(num_bodies);
+  ang_pos.resize(num_bodies);
   for (auto i = 0; i < 6; ++i) {
     fs.read(reinterpret_cast<char*>(&boundary[i]), static_cast<std::streamsize>(sizeof(float)));
   }
@@ -358,7 +362,7 @@ void Engine::dump_tick_to_file() {
   fs.write(reinterpret_cast<const char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
   fs.write(reinterpret_cast<const char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
   fs.write(reinterpret_cast<const char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
-  fs.flush();
+  fs.write(reinterpret_cast<const char*>(ang_pos.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(Quaternion)));
 }
 
 void Engine::load_tick_from_file() {
@@ -366,4 +370,5 @@ void Engine::load_tick_from_file() {
   fs.read(reinterpret_cast<char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
   fs.read(reinterpret_cast<char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
   fs.read(reinterpret_cast<char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
+  fs.read(reinterpret_cast<char*>(ang_pos.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(Quaternion)));
 }
