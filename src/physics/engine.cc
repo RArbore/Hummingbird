@@ -119,17 +119,18 @@ std::size_t Engine::get_num_bodies() const { return num_bodies; }
 const float* Engine::get_boundary() const { return boundary; }
 
 void Engine::update(const float dt) {
+  if (paused) return;
   if (playback) {
-    load_tick_from_file();
+    float now_dt = load_tick_from_file();
+    if (now_dt < dt) sleep((dt - now_dt) / 1000.0);
   }
   else {
-    if (paused) return;
     dynamics_update(dt);
     auto octree = make_octree();
     auto collisions = find_collisions(std::move(octree));
     collision_response(collisions);
     collision_response_with_walls();
-    if (record) dump_tick_to_file();
+    if (record) dump_tick_to_file(dt);
   }
 }
 
@@ -363,17 +364,21 @@ void Engine::load_init_from_file() {
   }
 }
 
-void Engine::dump_tick_to_file() {
+void Engine::dump_tick_to_file(float dt) {
   fs.write(reinterpret_cast<const char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
   fs.write(reinterpret_cast<const char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
   fs.write(reinterpret_cast<const char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
   fs.write(reinterpret_cast<const char*>(ang_pos.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(Quaternion)));
+  fs.write(reinterpret_cast<char*>(&dt), static_cast<std::streamsize>(sizeof(float)));
 }
 
-void Engine::load_tick_from_file() {
-  if (fs.peek() == EOF) return;
+float Engine::load_tick_from_file() {
+  if (fs.peek() == EOF) return 0.0f;
   fs.read(reinterpret_cast<char*>(pos.x.data()), static_cast<std::streamsize>(pos.x.size() * sizeof(float)));
   fs.read(reinterpret_cast<char*>(pos.y.data()), static_cast<std::streamsize>(pos.y.size() * sizeof(float)));
   fs.read(reinterpret_cast<char*>(pos.z.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(float)));
   fs.read(reinterpret_cast<char*>(ang_pos.data()), static_cast<std::streamsize>(pos.z.size() * sizeof(Quaternion)));
+  float dt;
+  fs.read(reinterpret_cast<char*>(&dt), static_cast<std::streamsize>(sizeof(float)));
+  return dt;
 }

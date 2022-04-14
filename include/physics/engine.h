@@ -23,6 +23,7 @@
 
 #include <boost/align/aligned_allocator.hpp>
 
+#include <unistd.h>
 #include <omp.h>
 
 #include <physics/quaternion.h>
@@ -109,8 +110,8 @@ private:
    */
   void dump_init_to_file();
   void load_init_from_file();
-  void dump_tick_to_file();
-  void load_tick_from_file();
+  void dump_tick_to_file(float dt);
+  float load_tick_from_file();
 
   /*
    * Utility functions for performing vector operations.
