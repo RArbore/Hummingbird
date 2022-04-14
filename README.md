@@ -49,3 +49,6 @@ To build and run the test suite, run the following:
 ```
 make exe_test
 ```
+
+## Note on JSON files
+In the JSON files you can adjust the gravity, the boundaries of the simulation, and the number of spherical bodies that you are simulating. 
