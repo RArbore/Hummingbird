@@ -54,7 +54,7 @@ build/quattests.o: tests/physics_tests/quat_tests.cc
 build/collidertests.o: tests/physics_tests/collider_tests.cc
 	$(CXX) $(CXX_FLAGS) -c $^ -o $@
 
-coverage: build/coverage/cli.o build/coverage/engine.o build/coverage/quattests.o build/coverage/tests.o build/coverage/quaternion.o build/coverage/collidertests.o build/coverage/collider.o build/coverage/playback.o
+coverage: build/coverage/cli.o build/coverage/engine.o build/coverage/quattests.o build/coverage/tests.o build/coverage/quaternion.o build/coverage/collidertests.o build/coverage/collider.o
 	$(LD) $(L_FLAGS) --coverage -o $@ $^
 build/coverage/tests.o: tests/cli_tests.cc
 	$(CXX) $(COV_FLAGS) -c $^ -o $@ --coverage
