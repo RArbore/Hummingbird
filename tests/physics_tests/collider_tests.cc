@@ -176,3 +176,14 @@ TEST_CASE("Sphere and wall collides test","[WallCollider]"){
     };
     REQUIRE_SAME_RESPONSE(response, expected_response);
 }
+
+
+TEST_CASE("Two wall no collide test","[WallCollider]"){
+    // Two walls will never collide
+    WallCollider collider1(1.0f, 0.0f, 0.0f);
+    WallCollider collider2(1.0f, 3.0f, 2.0f);
+    Transform pos1 {0.0f, 0.0f, 0.0f};
+    Transform pos2 {3.0f, 4.0f, 12.0f};
+    CollisionResponse response = collider1.checkCollision(collider2, pos1, pos2);
+    REQUIRE(!response.collides);
+}

@@ -93,6 +93,8 @@ clean:
 	rm -rf coverage
 	rm -rf out/*
 	rm -rf *.gcno
+	rm -rf build/coverage/*.gcda
+	rm -rf build/coverage/*.gcno
 	rm -rf coverage.info
 	rm -rf *.rec
 
