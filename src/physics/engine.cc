@@ -122,7 +122,9 @@ void Engine::update(const float dt) {
   if (paused) return;
   if (playback) {
     float now_dt = load_tick_from_file();
-    if (now_dt < dt) sleep((dt - now_dt) / 1000.0);
+    if (now_dt < dt) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(static_cast<int>(dt - now_dt)));
+    }
   }
   else {
     dynamics_update(dt);

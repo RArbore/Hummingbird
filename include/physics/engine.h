@@ -20,10 +20,11 @@
 #include <tuple>
 #include <iostream>
 #include <string>
+#include <chrono>
+#include <thread>
 
 #include <boost/align/aligned_allocator.hpp>
 
-#include <unistd.h>
 #include <omp.h>
 
 #include <physics/quaternion.h>
