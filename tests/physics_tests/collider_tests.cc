@@ -187,3 +187,13 @@ TEST_CASE("Two wall no collide test","[WallCollider]"){
     CollisionResponse response = collider1.checkCollision(collider2, pos1, pos2);
     REQUIRE(!response.collides);
 }
+
+TEST_CASE("Two wall no collide test 2","[WallCollider]"){
+    // Two walls will never collide
+    WallCollider collider1(3.0f, 0.0f, 0.0f);
+    WallCollider collider2(10.0f, 3.0f, 3.0f);
+    Transform pos1 {0.0f, 0.0f, 0.0f};
+    Transform pos2 {32.0f, 34.0f, 22.0f};
+    CollisionResponse response = collider1.checkCollision(collider2, pos1, pos2);
+    REQUIRE(!response.collides);
+}
