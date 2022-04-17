@@ -103,6 +103,6 @@ private:
    */
   float cx, cy, cz, cphi, ctheta;
 
-  bool released_enter = true;
+  bool released_enter = true, released_left = true, released_right = true;
   void handle_input(float dt);
 };

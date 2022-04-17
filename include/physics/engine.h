@@ -61,6 +61,7 @@ public:
   };
 
   bool paused = false;
+  float playback_speed = 1.0f / 256.0f;
 
   const Vec3x<float, 32> &get_pos() const;
   const Vec3x<float, 32> &get_vel() const;
@@ -78,8 +79,8 @@ private:
   float grav_constant, elasticity, boundary[6];
   std::size_t num_bodies;
 
-  /**
-   * for facilitating playback/record
+  /*
+   * For facilitating playback/record.
    */
   bool record = false, playback = false; 
   std::fstream fs; 

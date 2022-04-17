@@ -541,6 +541,20 @@ void Graphics::handle_input(float dt) {
   if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT)) {
     cy -= MOVE_SPEED * dt;
   }
+  if (glfwGetKey(window, GLFW_KEY_LEFT) && released_left) {
+    engine.playback_speed *= 0.5f;
+    released_left = false;
+  }
+  else if (!glfwGetKey(window, GLFW_KEY_LEFT)) {
+    released_left = true;
+  }
+  if (glfwGetKey(window, GLFW_KEY_RIGHT) && released_right) {
+    engine.playback_speed *= 2.0f;
+    released_right = false;
+  }
+  else if (!glfwGetKey(window, GLFW_KEY_RIGHT)) {
+    released_right = true;
+  }
   if (glfwGetKey(window, GLFW_KEY_ENTER) && released_enter) {
     engine.paused = !engine.paused;
     released_enter = false;
